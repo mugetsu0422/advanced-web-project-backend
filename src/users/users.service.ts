@@ -10,8 +10,12 @@ export class UsersService {
     private readonly usersRepo: Repository<User>
   ) {}
 
-  async findOne(UserID: string): Promise<User> {
+  async findOneByUserID(UserID: string): Promise<User> {
     return await this.usersRepo.findOneBy({ UserID })
+  }
+
+  async findOneByUserName(username: string): Promise<User> {
+    return await this.usersRepo.findOneBy({ username })
   }
 
   async create(user: User): Promise<User> {
