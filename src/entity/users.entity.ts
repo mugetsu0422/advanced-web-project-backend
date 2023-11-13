@@ -17,16 +17,16 @@ export class User {
   @Column({ name: 'Pass', type: 'binary', length: 60 })
   password: string
 
-  @Column({ name: 'Email', type: 'varchar', length: 200 })
+  @Column({ name: 'Email', type: 'varchar', length: 200, default: '' })
   email: string
 
-  @Column({ name: 'Phone', type: 'varchar', length: 15 })
+  @Column({ name: 'Phone', type: 'varchar', length: 15, default: '' })
   phone: string
 
-  @Column({ name: 'Address', type: 'varchar', length: 200 })
+  @Column({ name: 'Address', type: 'varchar', length: 200, default: '' })
   address: string
 
-  @Column({ name: 'AccountType', type: 'int' })
+  @Column({ name: 'AccountType', type: 'int', default: 0 })
   accountType: number
 
   @CreateDateColumn({ name: 'CreateTime', type: 'datetime' })
@@ -35,7 +35,7 @@ export class User {
   @UpdateDateColumn({ name: 'UpdateTime', type: 'datetime' })
   updateTime: Date
 
-  @Column({ name: 'IsLocked', type: 'boolean' })
+  @Column({ name: 'IsLocked', type: 'boolean', default: false })
   isLocked: boolean
 
   @Column({ name: 'IsDelete', type: 'boolean', default: false })
