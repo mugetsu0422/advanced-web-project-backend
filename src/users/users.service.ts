@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from 'src/entity/users.entity'
 import { Repository } from 'typeorm'
@@ -12,5 +12,18 @@ export class UsersService {
 
   async findOne(UserID: string): Promise<User> {
     return await this.usersRepo.findOneBy({ UserID })
+  }
+
+  async create(user: User): Promise<User> {
+    try {
+      return await this.usersRepo.save(user)
+    } catch (exception) {
+      console.log(exception)
+      if (exception.code == 'ER_DUP_ENTRY') {
+        throw new BadRequestException(
+          `User with ID ${user.UserID} already exists.`
+        )
+      }
+    }
   }
 }
