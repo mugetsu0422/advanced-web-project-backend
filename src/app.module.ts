@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-// import { AuthModule } from './auth/auth.module'
+import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import configuration from './config/configuration'
@@ -27,7 +27,7 @@ import configuration from './config/configuration'
       }),
       inject: [ConfigService],
     }),
-    // AuthModule,
+    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],
