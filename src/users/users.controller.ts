@@ -22,4 +22,9 @@ export class UsersController {
   async updateUserById(@Param('userID') userID: string, @Body() updatedUser: User): Promise<void> {
     await this.userService.updateUser(userID, updatedUser);
   }
+
+  @Post('change-password')
+  async changePassword(@Body() changePasswordDto: { userId: string; oldPassword: string; newPassword: string }): Promise<any> {
+    return this.userService.changePassword(changePasswordDto.userId, changePasswordDto.oldPassword, changePasswordDto.newPassword);
+  }
 }
