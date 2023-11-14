@@ -30,4 +30,12 @@ export class UsersService {
       }
     }
   }
+  async updateUser(userID: string, updatedUser: Partial<User>): Promise<void> {
+    try {
+      await this.usersRepo.update({ UserID: userID }, updatedUser);
+    } catch (exception) {
+      console.log(exception);
+      throw new BadRequestException(`Error updating user with ID ${userID}`);
+    }
+  }
 }
