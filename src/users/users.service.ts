@@ -54,14 +54,7 @@ export class UsersService {
   async changePassword(UserID, oldPassword, newPassword): Promise<any> {
     const user = await this.usersRepo.findOneBy( { UserID });
 
-    console.log(UserID);
-    console.log(user.username);
-    console.log(oldPassword);
-    console.log(user?.password.toString())
-
     const isMatch = await bcrypt.compareSync(oldPassword, user?.password.toString());
-
-    console.log(isMatch);
     if (isMatch) {
       await this.usersRepo.update({ UserID: UserID }, { password: newPassword });
       return { message: 'Password updated successfully' };
