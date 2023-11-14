@@ -33,33 +33,43 @@ export class UsersService {
   }
   async updateUser(userID: string, updatedUser: Partial<User>): Promise<void> {
     try {
-      const { username } = updatedUser;
-  
+      const { username } = updatedUser
+
       if (username !== undefined && username.trim() !== '') {
-        const existingUserWithUsername = await this.usersRepo.findOne({ where: { username } });
-  
-        if (!existingUserWithUsername || existingUserWithUsername.UserID === userID) {
-          await this.usersRepo.update({ UserID: userID }, updatedUser);
+        const existingUserWithUsername = await this.usersRepo.findOne({
+          where: { username },
+        })
+
+        if (
+          !existingUserWithUsername ||
+          existingUserWithUsername.UserID === userID
+        ) {
+          await this.usersRepo.update({ UserID: userID }, updatedUser)
         } else {
-          throw new BadRequestException(`Username '${username}' already exists.`);
+          throw new BadRequestException(
+            `Username '${username}' already exists.`
+          )
         }
       } else {
-        throw new BadRequestException('Username cannot be blank.');
+        throw new BadRequestException('Username cannot be blank.')
       }
     } catch (exception) {
-      console.log(exception);
-      throw new BadRequestException(`Error updating user with ID ${userID}`);
+      console.log(exception)
+      throw new BadRequestException(`Error updating user with ID ${userID}`)
     }
   }
   async changePassword(UserID, oldPassword, newPassword): Promise<any> {
-    const user = await this.usersRepo.findOneBy( { UserID });
+    const user = await this.usersRepo.findOneBy({ UserID })
 
-    const isMatch = await bcrypt.compareSync(oldPassword, user?.password.toString());
+    const isMatch = await bcrypt.compareSync(
+      oldPassword,
+      user?.password.toString()
+    )
     if (isMatch) {
-      await this.usersRepo.update({ UserID: UserID }, { password: newPassword });
-      return { message: 'Password updated successfully' };
+      await this.usersRepo.update({ UserID: UserID }, { password: newPassword })
+      return { message: 'Password updated successfully' }
     } else {
-      throw new BadRequestException(`Old password incorrect`);
+      throw new BadRequestException(`Old password incorrect`)
     }
   }
 }
