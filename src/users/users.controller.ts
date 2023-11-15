@@ -7,9 +7,11 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { User } from 'src/entity/users.entity'
+import { AuthGuard } from './../auth/auth.guard'
 
 @Controller('users')
 export class UsersController {
@@ -21,11 +23,13 @@ export class UsersController {
     return this.userService.create(user)
   }
 
+  @UseGuards(AuthGuard)
   @Get(':userID')
   async getUserById(@Param('userID') userID: string): Promise<User> {
     return this.userService.findOneByUserID(userID)
   }
 
+  @UseGuards(AuthGuard)
   @Put(':userID')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateUserById(
@@ -35,6 +39,7 @@ export class UsersController {
     await this.userService.updateUser(userID, updatedUser)
   }
 
+  @UseGuards(AuthGuard)
   @Post('change-password')
   async changePassword(
     @Body()
