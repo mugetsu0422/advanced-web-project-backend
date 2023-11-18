@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { User } from 'src/entity/users.entity'
-import { AuthGuard } from './../auth/auth.guard'
+import { AuthGuard } from '@nestjs/passport'
 
 @Controller('users')
 export class UsersController {
@@ -23,23 +23,26 @@ export class UsersController {
     return this.userService.create(user)
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Get(':userID')
-  async getUserById(@Param('userID') userID: string): Promise<User> {
-    return this.userService.findOneByUserID(userID)
+  async getUserById(@Param('userID') userID: string): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } =
+      await this.userService.findOneByUserID(userID)
+    return result
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Put(':userID')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateUserById(
     @Param('userID') userID: string,
     @Body() updatedUser: User
   ): Promise<void> {
-    await this.userService.updateUser(userID, updatedUser)
+    return await this.userService.updateUser(userID, updatedUser)
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Post('change-password')
   async changePassword(
     @Body()
@@ -49,7 +52,7 @@ export class UsersController {
       newPassword: string
     }
   ): Promise<any> {
-    return this.userService.changePassword(
+    return await this.userService.changePassword(
       changePasswordDto.userId,
       changePasswordDto.oldPassword,
       changePasswordDto.newPassword
