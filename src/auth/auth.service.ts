@@ -10,7 +10,7 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async signIn(username, password): Promise<any> {
+  async validateUser(username: string, password: string): Promise<any> {
     const user = await this.userService.findOneByUserName(username)
 
     if (!user) {
@@ -24,12 +24,17 @@ export class AuthService {
     )
 
     if (isMatch) {
-      const payload = { sub: user.UserID, username: user.username }
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-      }
-    } else {
-      throw new UnauthorizedException()
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user
+      return result
+    }
+    return null
+  }
+
+  async generateJWtToken(user: any) {
+    const payload = { sub: user.UserID, username: user.username }
+    return {
+      access_token: await this.jwtService.signAsync(payload),
     }
   }
 }
