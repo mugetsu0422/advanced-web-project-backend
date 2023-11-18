@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { User } from 'src/entity/users.entity'
-import { AuthGuard } from '@nestjs/passport'
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 
 @Controller('users')
 export class UsersController {
@@ -23,7 +23,7 @@ export class UsersController {
     return this.userService.create(user)
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get(':userID')
   async getUserById(@Param('userID') userID: string): Promise<any> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,7 +32,7 @@ export class UsersController {
     return result
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Put(':userID')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateUserById(
@@ -42,7 +42,7 @@ export class UsersController {
     return await this.userService.updateUser(userID, updatedUser)
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
     @Body()
