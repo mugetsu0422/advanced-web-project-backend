@@ -12,15 +12,11 @@ export class UsersService {
   ) {}
 
   async findOneByUserID(UserID: string): Promise<User> {
-    const user = await this.usersRepo.findOneBy({ UserID })
-    delete user.password
-    return user
+    return await this.usersRepo.findOneBy({ UserID })
   }
 
   async findOneByUserName(username: string): Promise<User> {
-    const user = await this.usersRepo.findOneBy({ username })
-    delete user.password
-    return user
+    return await this.usersRepo.findOneBy({ username })
   }
 
   async create(user: User): Promise<User> {
