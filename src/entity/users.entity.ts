@@ -1,3 +1,4 @@
+import { UserRole } from 'src/model/role.enum'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -17,6 +18,12 @@ export class User {
   @Column({ name: 'Pass', type: 'binary', length: 60 })
   password: string
 
+  @Column({ name: 'GoogleID', type: 'varchar', length: 25, default: '' })
+  googleID: string
+
+  @Column({ name: 'FacebookID', type: 'varchar', length: 25, default: '' })
+  facebookID: string
+
   @Column({ name: 'Email', type: 'varchar', length: 200, default: '' })
   email: string
 
@@ -26,14 +33,17 @@ export class User {
   @Column({ name: 'Address', type: 'varchar', length: 200, default: '' })
   address: string
 
-  @Column({ name: 'AccountType', type: 'int', default: 0 })
-  accountType: number
+  @Column({ name: 'Role', type: 'enum', enum: UserRole })
+  role: UserRole
 
   @CreateDateColumn({ name: 'CreateTime', type: 'datetime' })
   createTime: Date
 
   @UpdateDateColumn({ name: 'UpdateTime', type: 'datetime' })
   updateTime: Date
+
+  @Column({ name: 'IsActivated', type: 'boolean', default: false })
+  isActivated: boolean
 
   @Column({ name: 'IsLocked', type: 'boolean', default: false })
   isLocked: boolean
