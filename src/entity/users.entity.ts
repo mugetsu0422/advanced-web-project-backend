@@ -18,6 +18,12 @@ export class User {
   @Column({ name: 'Pass', type: 'binary', length: 60 })
   password: string
 
+  @Column({ name: 'GoogleID', type: 'varchar', length: 25, default: '' })
+  googleID: string
+
+  @Column({ name: 'FacebookID', type: 'varchar', length: 25, default: '' })
+  facebookID: string
+
   @Column({ name: 'Email', type: 'varchar', length: 200, default: '' })
   email: string
 
