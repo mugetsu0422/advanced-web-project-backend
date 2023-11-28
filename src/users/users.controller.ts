@@ -8,14 +8,22 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
+import { MailingService } from '../mailing/mailing.service'
+import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entity/users.entity'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
+import { generateTokenFromEmail } from '../mailing/TokenUtils';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly mailingService: MailingService,
+    private readonly configService: ConfigService,
+    ) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -57,5 +65,32 @@ export class UsersController {
       changePasswordDto.oldPassword,
       changePasswordDto.newPassword
     )
+  }
+
+  @Post('request-reset-password')
+  async sendResetPasswordLink(@Body() { email }: { email: string }): Promise<any> {
+    const user = await this.userService.findOneByUserEmail(email);
+    if (user) {
+      const token = generateTokenFromEmail(email);
+      const clientUrl = this.configService.get<string>('CLIENT_URL');
+      const resetLink = `${clientUrl}forget-password/${token}`;
+      await this.userService.storePasswordResetToken(user.UserID, token);
+      await this.mailingService.sendResetEmail(email, resetLink);
+      return { message: 'Reset instructions sent successfully' };
+    } else {
+      throw new BadRequestException('User not found');
+    }
+  }
+
+  @Post('set-new-password')
+  async setNewPassword(@Body() { token, newPassword }: { token: string; newPassword: string }): Promise<any> {
+    const user = await this.userService.findUserByToken(token);
+
+    if (user) {
+      await this.userService.updateUserPassword(user.UserID, newPassword);
+      return { message: 'Password updated successfully' };
+    } else {
+      throw new BadRequestException('Invalid or expired token');
+    }
   }
 }
