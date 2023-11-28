@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm'
 
 @Entity('users')
@@ -15,7 +14,10 @@ export class User {
   @Column({ name: 'UserName', type: 'varchar', length: 50, unique: true })
   username: string
 
-  @Column({ name: 'Pass', type: 'binary', length: 60 })
+  @Column({ name: 'FullName', type: 'varchar', length: 200, default: '' })
+  fullname: string
+
+  @Column({ name: 'Pass', type: 'binary', length: 60, nullable: true })
   password: string
 
   @Column({ name: 'GoogleID', type: 'varchar', length: 25, default: '' })
@@ -38,9 +40,6 @@ export class User {
 
   @CreateDateColumn({ name: 'CreateTime', type: 'datetime' })
   createTime: Date
-
-  @UpdateDateColumn({ name: 'UpdateTime', type: 'datetime' })
-  updateTime: Date
 
   @Column({ name: 'IsActivated', type: 'boolean', default: false })
   isActivated: boolean

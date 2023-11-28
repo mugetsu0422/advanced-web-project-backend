@@ -11,7 +11,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
     @InjectRepository(PasswordResetToken)
-    private readonly passwordResetTokenRepo: Repository<PasswordResetToken>,
+    private readonly passwordResetTokenRepo: Repository<PasswordResetToken>
   ) {}
 
   async findOneByUserID(UserID: string): Promise<User> {
@@ -26,6 +26,14 @@ export class UsersService {
     return await this.usersRepo.findOneBy({ email })
   }
 
+  async findOneByGoogleID(googleID: string): Promise<User> {
+    return await this.usersRepo.findOneBy({ googleID })
+  }
+
+  async findOneByFacebookID(facebookID: string): Promise<User> {
+    return await this.usersRepo.findOneBy({ facebookID })
+  }
+
   async create(user: User): Promise<User> {
     try {
       return await this.usersRepo.save(user)
@@ -38,6 +46,7 @@ export class UsersService {
       }
     }
   }
+
   async updateUser(userID: string, updatedUser: Partial<User>): Promise<void> {
     try {
       const { username } = updatedUser
@@ -65,6 +74,7 @@ export class UsersService {
       throw new BadRequestException(`Error updating user with ID ${userID}`)
     }
   }
+
   async changePassword(UserID, oldPassword, newPassword): Promise<any> {
     const user = await this.usersRepo.findOneBy({ UserID })
 
@@ -81,32 +91,41 @@ export class UsersService {
   }
   async updateUserPassword(userID: string, newPassword: string): Promise<void> {
     try {
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await this.usersRepo.update({ UserID: userID }, { password: hashedPassword });
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      await this.usersRepo.update(
+        { UserID: userID },
+        { password: hashedPassword }
+      )
     } catch (exception) {
-      console.error(exception);
-      throw new BadRequestException(`Error updating password for user with ID ${userID}`);
+      console.error(exception)
+      throw new BadRequestException(
+        `Error updating password for user with ID ${userID}`
+      )
     }
   }
   async storePasswordResetToken(userID: string, token: string): Promise<void> {
     try {
-      await this.passwordResetTokenRepo.save({ userID, token });
+      await this.passwordResetTokenRepo.save({ userID, token })
     } catch (error) {
-      console.error(error);
-      throw new BadRequestException('Error storing password reset token');
+      console.error(error)
+      throw new BadRequestException('Error storing password reset token')
     }
   }
   async findUserByToken(token: string): Promise<User | undefined> {
     try {
-      const passwordResetToken = await this.passwordResetTokenRepo.findOneBy({ token });
+      const passwordResetToken = await this.passwordResetTokenRepo.findOneBy({
+        token,
+      })
       if (passwordResetToken) {
-        const user = await this.usersRepo.findOneBy({ UserID: passwordResetToken.userID });
-        return user;
+        const user = await this.usersRepo.findOneBy({
+          UserID: passwordResetToken.userID,
+        })
+        return user
       }
-      return undefined;
+      return undefined
     } catch (error) {
-      console.error(error);
-      throw new BadRequestException('Error finding user by token');
+      console.error(error)
+      throw new BadRequestException('Error finding user by token')
     }
   }
 }
