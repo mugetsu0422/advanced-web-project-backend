@@ -37,9 +37,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
     AuthModule,
     UsersModule,
     MailingModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     MailerModule.forRoot({
       transport: 'smtps://user@domain.com:pass@smtp.domain.com',
     }),
