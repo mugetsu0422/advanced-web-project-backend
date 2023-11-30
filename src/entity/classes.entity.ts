@@ -33,17 +33,4 @@ export class Class {
 
   @Column({ name: 'IsDelete', type: 'boolean', default: false })
   isDelete: boolean
-
-  // // !!! Đây là bảng class_participants !!!
-  // @ManyToMany(() => User)
-  // @JoinTable({
-  //   name: 'class_participants',
-  //   joinColumn: {
-  //     name: 'ClassID',
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'UserID',
-  //   },
-  // })
-  // classParticipants: User[]
 }
