@@ -97,4 +97,30 @@ export class UsersController {
       throw new BadRequestException('Invalid or expired token')
     }
   }
+
+  @Post('send-activation-code/:userID')
+  async sendActivationCode(@Param('userID') userID: string): Promise<any> {
+    try {
+      const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await this.userService.saveActivationCode(userID, activationCode);
+      const user = await this.userService.findOneByUserID(userID);
+      await this.mailingService.sendActivationCode(user.email, activationCode);
+      return { message: 'Activation code sent successfully!' };
+    } catch (error) {
+      throw new BadRequestException('Error sending activation code');
+    }
+  }
+
+  @Post('verify-activation-code')
+  async verifyActivationCode(
+    @Body() { activationCode, userId }: { activationCode: string; userId: string }
+  ): Promise<any> {
+    try {
+      const isActivated = await this.userService.activateUser(userId, activationCode);
+      return { isActivated };
+    } catch (error) {
+      console.error('Error verifying activation code:', error.message);
+      throw new BadRequestException('Error verifying activation code');
+    }
+  }
 }
