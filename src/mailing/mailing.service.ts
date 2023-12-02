@@ -58,4 +58,18 @@ export class MailingService {
             console.log(err);
         });;
     }
+    public async sendActivationCode(email: string, activationCode: string): Promise<void> {
+        await this.setTransport();
+        await this.mailerService.sendMail({
+            transporterName: 'gmail',
+            to: email,
+            from: 'no-reply@gmail.com',
+            subject: 'Code To Activate Your Matcha Account',
+            template: 'action',
+            html: `Save this 6 digit code "${activationCode}" and go back to Profile > Email activation to finish activate your account.`,
+        })
+        .catch((err) => {
+            console.log(err);
+        });;
+    }
 }

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from 'src/entity/users.entity'
 import { PasswordResetToken } from 'src/entity/password-reset-token.entity'
+import { EmailActivationCode } from 'src/entity/email-activation-codes.entity'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 
@@ -11,7 +12,9 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
     @InjectRepository(PasswordResetToken)
-    private readonly passwordResetTokenRepo: Repository<PasswordResetToken>
+    private readonly passwordResetTokenRepo: Repository<PasswordResetToken>,
+    @InjectRepository(EmailActivationCode)
+    private readonly emailActivationCodesRepo: Repository<EmailActivationCode>
   ) {}
 
   async findOneByUserID(UserID: string): Promise<User> {
@@ -126,6 +129,34 @@ export class UsersService {
     } catch (error) {
       console.error(error)
       throw new BadRequestException('Error finding user by token')
+    }
+  }
+
+  async saveActivationCode(userID: string, activationCode: string): Promise<void> {
+    try {
+      const emailActivationCode = new EmailActivationCode();
+      emailActivationCode.userID = userID;
+      emailActivationCode.activationCode = activationCode;
+      await this.emailActivationCodesRepo.save(emailActivationCode);
+    } catch (error) {
+      throw new BadRequestException('Error saving activation code');
+    }
+  }
+
+  async activateUser(userID: string, activationCode: string): Promise<boolean> {
+    try {
+      const emailActivationCode = await this.emailActivationCodesRepo.findOneBy({
+        activationCode
+      });
+
+      if (emailActivationCode) {
+        await this.usersRepo.update({ UserID: userID }, { isActivated: true });
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      throw new BadRequestException('Error activating user');
     }
   }
 }
