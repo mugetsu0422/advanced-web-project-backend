@@ -38,11 +38,15 @@ export class UsersService {
     try {
       return await this.usersRepo.save(user)
     } catch (exception) {
-      console.log(exception)
+      console.error(exception)
       if (exception.code == 'ER_DUP_ENTRY') {
-        throw new BadRequestException(
-          `User with ID ${user.UserID} already exists.`
-        )
+        if (exception.sqlMessage.includes('UserName')) {
+          throw new BadRequestException(
+            `username {${user.username}} already exists.`
+          )
+        } else if (exception.sqlMessage.includes('Email')) {
+          throw new BadRequestException(`email {${user.email}} already exists.`)
+        }
       }
     }
   }
