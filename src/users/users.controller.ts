@@ -69,10 +69,10 @@ export class UsersController {
 
   @Post('request-reset-password')
   async sendResetPasswordLink(
-    @Body() { email }: { email: string }
+  @Body() { email }: { email: string }
   ): Promise<any> {
     const user = await this.userService.findOneByUserEmail(email)
-    if (user) {
+    if (user && user.isActivated) {
       const token = generateTokenFromEmail(email)
       const clientUrl = this.configService.get<string>('CLIENT_URL')
       const resetLink = `${clientUrl}forget-password/${token}`
@@ -80,7 +80,7 @@ export class UsersController {
       await this.mailingService.sendResetEmail(email, resetLink)
       return { message: 'Reset instructions sent successfully' }
     } else {
-      throw new BadRequestException('User not found')
+      throw new BadRequestException('User not found or account not activated')
     }
   }
 
