@@ -26,7 +26,7 @@ export class User {
   @Column({ name: 'FacebookID', type: 'varchar', length: 25, default: '' })
   facebookID: string
 
-  @Column({ name: 'Email', type: 'varchar', length: 200, default: '' })
+  @Column({ name: 'Email', type: 'varchar', length: 200, unique: true })
   email: string
 
   @Column({ name: 'Phone', type: 'varchar', length: 15, default: '' })
