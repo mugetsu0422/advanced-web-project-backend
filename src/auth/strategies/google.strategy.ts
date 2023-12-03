@@ -22,7 +22,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     // Perform custom validation or save user to database
     let user = await this.userService.findOneByGoogleID(profile.id)
     if (!user) {
-      user = { UserID: uuidv4(), username: profile.id, password: null, fullname: profile.displayName, googleID: profile.id, facebookID: '', email: profile.emails[0].value, phone: '', address: '', role: UserRole.Student, createTime: new Date(), isActivated: false, isLocked: false, isDelete: false }
+      user = { UserID: uuidv4(), username: profile.id, password: null, fullname: profile.displayName, googleID: profile.id, facebookID: '', email: profile.emails[0].value, phone: '', address: '', role: UserRole.Empty, createTime: new Date(), isActivated: false, isLocked: false, isDelete: false }
       this.userService.create(user)
     }
     return done(null, profile);
