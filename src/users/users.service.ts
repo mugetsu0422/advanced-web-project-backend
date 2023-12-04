@@ -5,6 +5,7 @@ import { PasswordResetToken } from 'src/entity/password-reset-token.entity'
 import { EmailActivationCode } from 'src/entity/email-activation-codes.entity'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
+import { UserRole } from 'src/model/role.enum'
 
 @Injectable()
 export class UsersService {
@@ -162,5 +163,16 @@ export class UsersService {
     } catch (error) {
       throw new BadRequestException('Error activating user');
     }
+  }
+
+  async updateRole(userID: string, role: string): Promise<boolean> {
+    if (role == 'teacher') {
+      await this.usersRepo.update({ UserID: userID }, { role: UserRole.Teacher });
+    }
+    if (role == 'student') {
+      await this.usersRepo.update({ UserID: userID }, { role: UserRole.Student });
+    }
+    
+    return true;
   }
 }

@@ -16,13 +16,14 @@ import { ConfigService } from '@nestjs/config'
 import { User } from 'src/entity/users.entity'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { generateTokenFromEmail } from '../mailing/TokenUtils'
+import { AuthService } from 'src/auth/auth.service'
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly mailingService: MailingService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -122,5 +123,27 @@ export class UsersController {
       console.error('Error verifying activation code:', error.message);
       throw new BadRequestException('Error verifying activation code');
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('update-role-social-login')
+  async updateRoleSocialLogin(
+  @Body() { socialToken, role }: { socialToken: string; role: string }
+  ): Promise<any> {
+    let user = await this.userService.findOneByGoogleID(socialToken);
+    let success = false;
+    if (user !== null) {
+      success = await this.userService.updateRole(user.UserID, role)
+      return  { success };
+    } else {
+
+      user = await this.userService.findOneByFacebookID(socialToken);
+
+      if (user !== null) {  
+        success = await this.userService.updateRole(user.UserID, role)
+        return  { success };
+      }
+    }
+    return {success};
   }
 }

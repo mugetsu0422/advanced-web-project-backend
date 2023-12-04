@@ -27,7 +27,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     let user = await this.userService.findOneByFacebookID(profile.id)
     if (!user) {
       const fullName = [profile.name.familyName, profile.name.middleName, profile.name.givenName].filter(Boolean).join(' ');
-      user = { UserID: uuidv4(), username: profile.id, password: null, fullname: fullName, googleID: '', facebookID: profile.id, email: profile.emails[0].value, phone: '', address: '', role: UserRole.Student, createTime: new Date(), isActivated: false, isLocked: false, isDelete: false }
+      user = { UserID: uuidv4(), username: profile.id, password: null, fullname: fullName, googleID: '', facebookID: profile.id, email: profile.emails[0].value, phone: '', address: '', role: UserRole.Empty, createTime: new Date(), isActivated: false, isLocked: false, isDelete: false }
       this.userService.create(user)
     }
     return done(null, profile);
