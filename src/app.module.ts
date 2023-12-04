@@ -8,6 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import configuration from './config/configuration'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
+import { MailingModule } from './mailing/mailing.module'
+import { MailerModule } from '@nestjs-modules/mailer'
 
 @Module({
   imports: [
@@ -28,12 +30,16 @@ import { join } from 'path'
         password: configService.get<string>('database.password'),
         database: configService.get<string>('database.name'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,
+    MailingModule,
+    MailerModule.forRoot({
+      transport: 'smtps://user@domain.com:pass@smtp.domain.com',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
