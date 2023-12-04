@@ -8,9 +8,11 @@ import { PasswordResetToken } from 'src/entity/password-reset-token.entity'
 import { EmailActivationCode } from 'src/entity/email-activation-codes.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]),
-  TypeOrmModule.forFeature([PasswordResetToken]),
-  TypeOrmModule.forFeature([EmailActivationCode])],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([PasswordResetToken]),
+    TypeOrmModule.forFeature([EmailActivationCode]),
+  ],
   providers: [UsersService, MailingService],
   exports: [UsersService],
   controllers: [UsersController],

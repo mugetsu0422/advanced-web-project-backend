@@ -137,42 +137,53 @@ export class UsersService {
     }
   }
 
-  async saveActivationCode(userID: string, activationCode: string): Promise<void> {
+  async saveActivationCode(
+    userID: string,
+    activationCode: string
+  ): Promise<void> {
     try {
-      const emailActivationCode = new EmailActivationCode();
-      emailActivationCode.userID = userID;
-      emailActivationCode.activationCode = activationCode;
-      await this.emailActivationCodesRepo.save(emailActivationCode);
+      const emailActivationCode = new EmailActivationCode()
+      emailActivationCode.userID = userID
+      emailActivationCode.activationCode = activationCode
+      await this.emailActivationCodesRepo.save(emailActivationCode)
     } catch (error) {
-      throw new BadRequestException('Error saving activation code');
+      throw new BadRequestException('Error saving activation code')
     }
   }
 
   async activateUser(userID: string, activationCode: string): Promise<boolean> {
     try {
-      const emailActivationCode = await this.emailActivationCodesRepo.findOneBy({
-        activationCode
-      });
+      const emailActivationCode = await this.emailActivationCodesRepo.findOneBy(
+        {
+          activationCode,
+        }
+      )
 
       if (emailActivationCode) {
-        await this.usersRepo.update({ UserID: userID }, { isActivated: true });
-        return true;
+        await this.usersRepo.update({ UserID: userID }, { isActivated: true })
+        return true
       }
 
-      return false;
+      return false
     } catch (error) {
-      throw new BadRequestException('Error activating user');
+      throw new BadRequestException('Error activating user')
     }
   }
 
   async updateRole(userID: string, role: string): Promise<boolean> {
     if (role == 'teacher') {
-      await this.usersRepo.update({ UserID: userID }, { role: UserRole.Teacher });
+      await this.usersRepo.update(
+        { UserID: userID },
+        { role: UserRole.Teacher }
+      )
     }
     if (role == 'student') {
-      await this.usersRepo.update({ UserID: userID }, { role: UserRole.Student });
+      await this.usersRepo.update(
+        { UserID: userID },
+        { role: UserRole.Student }
+      )
     }
-    
-    return true;
+
+    return true
   }
 }
