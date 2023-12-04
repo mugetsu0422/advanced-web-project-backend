@@ -23,7 +23,7 @@ export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly mailingService: MailingService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -70,7 +70,7 @@ export class UsersController {
 
   @Post('request-reset-password')
   async sendResetPasswordLink(
-  @Body() { email }: { email: string }
+    @Body() { email }: { email: string }
   ): Promise<any> {
     const user = await this.userService.findOneByUserEmail(email)
     if (user && user.isActivated) {
@@ -102,48 +102,53 @@ export class UsersController {
   @Post('send-activation-code/:userID')
   async sendActivationCode(@Param('userID') userID: string): Promise<any> {
     try {
-      const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await this.userService.saveActivationCode(userID, activationCode);
-      const user = await this.userService.findOneByUserID(userID);
-      await this.mailingService.sendActivationCode(user.email, activationCode);
-      return { message: 'Activation code sent successfully!' };
+      const activationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString()
+      await this.userService.saveActivationCode(userID, activationCode)
+      const user = await this.userService.findOneByUserID(userID)
+      await this.mailingService.sendActivationCode(user.email, activationCode)
+      return { message: 'Activation code sent successfully!' }
     } catch (error) {
-      throw new BadRequestException('Error sending activation code');
+      throw new BadRequestException('Error sending activation code')
     }
   }
 
   @Post('verify-activation-code')
   async verifyActivationCode(
-    @Body() { activationCode, userId }: { activationCode: string; userId: string }
+    @Body()
+    { activationCode, userId }: { activationCode: string; userId: string }
   ): Promise<any> {
     try {
-      const isActivated = await this.userService.activateUser(userId, activationCode);
-      return { isActivated };
+      const isActivated = await this.userService.activateUser(
+        userId,
+        activationCode
+      )
+      return { isActivated }
     } catch (error) {
-      console.error('Error verifying activation code:', error.message);
-      throw new BadRequestException('Error verifying activation code');
+      console.error('Error verifying activation code:', error.message)
+      throw new BadRequestException('Error verifying activation code')
     }
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('update-role-social-login')
   async updateRoleSocialLogin(
-  @Body() { socialToken, role }: { socialToken: string; role: string }
+    @Body() { socialToken, role }: { socialToken: string; role: string }
   ): Promise<any> {
-    let user = await this.userService.findOneByGoogleID(socialToken);
-    let success = false;
+    let user = await this.userService.findOneByGoogleID(socialToken)
+    let success = false
     if (user !== null) {
       success = await this.userService.updateRole(user.UserID, role)
-      return  { success };
+      return { success }
     } else {
+      user = await this.userService.findOneByFacebookID(socialToken)
 
-      user = await this.userService.findOneByFacebookID(socialToken);
-
-      if (user !== null) {  
+      if (user !== null) {
         success = await this.userService.updateRole(user.UserID, role)
-        return  { success };
+        return { success }
       }
     }
-    return {success};
+    return { success }
   }
 }
