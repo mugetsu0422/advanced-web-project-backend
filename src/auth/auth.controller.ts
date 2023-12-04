@@ -40,12 +40,10 @@ export class AuthController {
     const expires = new Date();
     expires.setDate(expires.getDate() + 1);
     if (req.user) {
-      // Set user_id of google account to cookie
-      res.cookie('socialToken', req.user.id, { expires });
+      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + req.user.id);
     } else {
-      res.cookie('socialToken', '', { expires });
+      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + '');
     }
-    return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin");
   }
 
   // Facebook signin
@@ -59,12 +57,10 @@ export class AuthController {
     const expires = new Date();
     expires.setDate(expires.getDate() + 1);
     if (req.user) {
-      // Set user_id of facebook account to cookie
-      res.cookie('socialToken', req.user.id, { expires });
+      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + req.user.id);
     } else {
-      res.cookie('socialToken', '', { expires });
+      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + '');
     }
-    return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin");
   }
 
   @Get('signin/success/:socialToken')
