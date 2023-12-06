@@ -99,6 +99,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('send-activation-code/:userID')
   async sendActivationCode(@Param('userID') userID: string): Promise<any> {
     try {
@@ -114,6 +115,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('verify-activation-code')
   async verifyActivationCode(
     @Body()
