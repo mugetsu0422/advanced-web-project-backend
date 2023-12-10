@@ -24,15 +24,6 @@ CREATE TABLE users (
 	PRIMARY KEY(UserID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
-DROP TABLE IF EXISTS students;
-CREATE TABLE students (
-	StudentID varchar(36) NOT NULL,
-	FullName varchar(200) default "",
-	UserID varchar(36),
-	FOREIGN KEY (UserID) REFERENCES users(UserID),
-	PRIMARY KEY(StudentID)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
 DROP TABLE IF EXISTS classes;
 CREATE TABLE classes (
 	ClassID varchar(36) NOT NULL,
@@ -46,6 +37,24 @@ CREATE TABLE classes (
 	IsDelete bool default(0),
 	FOREIGN KEY (Creator) REFERENCES users(UserID),
 	PRIMARY KEY(ClassID)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+DROP TABLE IF EXISTS class_student_list;
+CREATE TABLE class_student_list (
+	StudentID varchar(8) NOT NULL,
+	ClassID varchar(36) NOT NULL,
+	FullName varchar(200) default "",
+	FOREIGN KEY (UserID) REFERENCES users(UserID),
+    FOREIGN KEY (ClassID) REFERENCES classes(ClassID),
+	PRIMARY KEY(StudentID, ClassID)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+DROP TABLE IF EXISTS students;
+CREATE TABLE students (
+	UserID varchar(36) NOT NULL,
+	StudentID varchar(8) NOT NULL UNIQUE,
+	FOREIGN KEY (UserID) REFERENCES users(UserID),
+	PRIMARY KEY(UserID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 DROP TABLE IF EXISTS class_participants;
@@ -74,22 +83,22 @@ CREATE TABLE grade_compositions (
 DROP TABLE IF EXISTS grades;
 CREATE TABLE grades (
 	GradeCompositionID varchar(36) NOT NULL,
-	UserID varchar(36) NOT NULL,
+	StudentID varchar(8) NOT NULL,
 	Grade float default(0),
 	CreateTime datetime default CURRENT_TIMESTAMP(),
-	FOREIGN KEY (UserID) REFERENCES users(UserID),
+	FOREIGN KEY (StudentID) REFERENCES class_student_list(StudentID),
 	FOREIGN KEY (GradeCompositionID) REFERENCES grade_compositions(GradeCompositionID),
-	PRIMARY KEY(GradeCompositionID, UserID)
+	PRIMARY KEY(GradeCompositionID, StudentID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 DROP TABLE IF EXISTS overall_grades;
 CREATE TABLE overall_grades (
 	ClassID varchar(36) NOT NULL,
-	UserID varchar(36) NOT NULL,
+	StudentID varchar(8) NOT NULL,
 	Grade float default(0),
-	FOREIGN KEY (UserID) REFERENCES users(UserID),
+	FOREIGN KEY (StudentID) REFERENCES class_student_list(StudentID),
 	FOREIGN KEY (ClassID) REFERENCES classes(ClassID),
-	PRIMARY KEY(ClassID, UserID)
+	PRIMARY KEY(StudentID, ClassID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 DROP TABLE IF EXISTS grade_reviews;
@@ -113,6 +122,7 @@ CREATE TABLE grade_review_comments (
 	GradeCompositionID varchar(36) NOT NULL,
 	UserID varchar(36) NOT NULL,
 	AuthorID varchar(36) NOT NULL,
+	CommentContent text,
 	CreateTime datetime default CURRENT_TIMESTAMP(),
 	FOREIGN KEY (AuthorID) REFERENCES users(UserID),
 	FOREIGN KEY (GradeCompositionID, UserID) REFERENCES grade_reviews(GradeCompositionID, UserID),
