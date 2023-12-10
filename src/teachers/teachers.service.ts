@@ -37,6 +37,9 @@ export class TeachersService {
     try {
       return await this.classesRepo.find({
         where: { creator: user.UserID },
+        order: {
+          createTime: 'DESC',
+        },
         skip: offset,
         take: limit,
       })
