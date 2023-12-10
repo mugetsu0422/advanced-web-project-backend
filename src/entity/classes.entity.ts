@@ -22,10 +22,10 @@ export class Class {
   @CreateDateColumn({ name: 'CreateTime', type: 'datetime', nullable: true })
   createTime: Date
 
-  @Column({ name: 'Code', type: 'varchar', length: 10, default: '' })
+  @Column({ name: 'Code', type: 'varchar', length: 10, unique: true })
   code: string
 
-  @Column({ name: 'Link', type: 'varchar', length: 100, default: '' })
+  @Column({ name: 'Link', type: 'varchar', length: 100 })
   link: string
 
   @Column({ name: 'IsClosed', type: 'boolean', default: false })
