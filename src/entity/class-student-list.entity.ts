@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm'
 
 @Entity('class_student_list')
-export class Student {
+export class ClassStudentList {
   @PrimaryColumn({ name: 'StudentID', type: 'varchar', length: 8 })
   id: string
 
