@@ -44,7 +44,6 @@ CREATE TABLE class_student_list (
 	StudentID varchar(8) NOT NULL,
 	ClassID varchar(36) NOT NULL,
 	FullName varchar(200) default "",
-	FOREIGN KEY (UserID) REFERENCES users(UserID),
     FOREIGN KEY (ClassID) REFERENCES classes(ClassID),
 	PRIMARY KEY(StudentID, ClassID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -122,7 +121,7 @@ CREATE TABLE grade_review_comments (
 	GradeCompositionID varchar(36) NOT NULL,
 	UserID varchar(36) NOT NULL,
 	AuthorID varchar(36) NOT NULL,
-	CommentContent text,
+    CommentContent text,
 	CreateTime datetime default CURRENT_TIMESTAMP(),
 	FOREIGN KEY (AuthorID) REFERENCES users(UserID),
 	FOREIGN KEY (GradeCompositionID, UserID) REFERENCES grade_reviews(GradeCompositionID, UserID),
