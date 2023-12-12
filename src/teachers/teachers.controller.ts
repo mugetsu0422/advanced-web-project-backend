@@ -16,7 +16,6 @@ import { HasRoles } from 'src/decorators/roles.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { Class } from 'src/entity/classes.entity'
-import { User } from 'src/entity/users.entity'
 import { TeacherClassAccess } from 'src/auth/guards/teacher-class-access.guard'
 
 @Controller('teachers')
@@ -59,5 +58,21 @@ export class TeachersController {
   @Get('class/:id')
   getClassDetails(@Request() req, @Param() params: any) {
     return this.teacherService.getClassDetails(params.id)
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard, TeacherClassAccess)
+  @HttpCode(HttpStatus.OK)
+  @Get('class/:id/people')
+  getClassPeople(@Param() params: any) {
+    return this.teacherService.getClassPeople(params.id)
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard, TeacherClassAccess)
+  @HttpCode(HttpStatus.CREATED)
+  @Post('class/:id/people')
+  addClassPeople(@Body() { email }: { email: string }, @Param() params: any) {
+    return this.teacherService.addClassPeople(email, params.id)
   }
 }

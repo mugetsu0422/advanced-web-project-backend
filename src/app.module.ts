@@ -13,6 +13,7 @@ import { MailerModule } from '@nestjs-modules/mailer'
 import { TeachersModule } from './teachers/teachers.module';
 import { StudentsModule } from './students/students.module';
 import { AdminsModule } from './admins/admins.module';
+import { DataSource } from 'typeorm'
 
 @Module({
   imports: [
@@ -50,4 +51,6 @@ import { AdminsModule } from './admins/admins.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+}
