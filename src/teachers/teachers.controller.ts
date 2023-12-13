@@ -35,7 +35,6 @@ export class TeachersController {
   @HttpCode(HttpStatus.OK)
   @Get('class/count')
   getClassCount(@Request() req) {
-    // Chưa đếm class mà là participant
     return this.teacherService.getClassCount(req.user)
   }
 
@@ -44,7 +43,6 @@ export class TeachersController {
   @HttpCode(HttpStatus.OK)
   @Get('class')
   getClasses(@Request() req, @Query() query: string) {
-    // Chưa lấy class mà là participant
     return this.teacherService.getClassesByOffset(
       req.user,
       +query['offset'],

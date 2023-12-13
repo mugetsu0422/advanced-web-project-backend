@@ -54,9 +54,17 @@ export class TeachersService {
 
   async getClassCount(user: User): Promise<number> {
     try {
-      return await this.classesRepo.count({
+      // Count classes that this user created
+      let count = await this.classesRepo.count({
         where: { creator: user.UserID },
       })
+      // Count classes that this user is a participant in as teacher
+      count += await this.classParticipantsRepo.count({
+        where: {
+          userID: user.UserID,
+        },
+      })
+      return count
     } catch (error) {
       console.error(error)
     }
@@ -68,7 +76,8 @@ export class TeachersService {
     limit: number
   ): Promise<Class[]> {
     try {
-      return await this.classesRepo.find({
+      // Get classes that this user created
+      const list1 = await this.classesRepo.find({
         select: {
           id: true,
           name: true,
@@ -81,6 +90,14 @@ export class TeachersService {
         skip: offset,
         take: limit,
       })
+      // Count classes that this user is a participant in as teacher
+      const list2 = await this.dataSource
+        .getRepository(Class)
+        .createQueryBuilder('c')
+        .innerJoin(ClassParticipants, 'cp', 'c.classid = cp.classid')
+        .where('cp.userid = :userid', { userid: user.UserID })
+        .getMany()
+      return list1.concat(list2)
     } catch (error) {
       console.error(error)
     }
@@ -110,7 +127,7 @@ export class TeachersService {
       const creator = await this.dataSource
         .createQueryBuilder(Class, 'c')
         .select('u.fullname as fullname')
-        .leftJoin(User, 'u', 'c.creator = u.userid')
+        .innerJoin(User, 'u', 'c.creator = u.userid')
         .where('c.classid = :classid', { classid: classID })
         .getRawMany()
 
@@ -118,7 +135,7 @@ export class TeachersService {
       const teachers = await this.dataSource
         .createQueryBuilder(ClassParticipants, 'cp')
         .select('u.fullname as fullname')
-        .leftJoin(User, 'u', 'cp.userid = u.userid')
+        .innerJoin(User, 'u', 'cp.userid = u.userid')
         .where('cp.classid = :classid', { classid: classID })
         .andWhere('u.role = :role', { role: UserRole.Teacher })
         .getRawMany()
@@ -127,7 +144,7 @@ export class TeachersService {
       const students = await this.dataSource
         .createQueryBuilder(ClassParticipants, 'cp')
         .select('u.fullname as fullname')
-        .leftJoin(User, 'u', 'cp.userid = u.userid')
+        .innerJoin(User, 'u', 'cp.userid = u.userid')
         .where('cp.classid = :classid', { classid: classID })
         .andWhere('u.role = :role', { role: UserRole.Student })
         .getRawMany()
