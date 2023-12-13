@@ -80,9 +80,7 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('class/:id/grade-compositions')
-  async getGradeCompositionsByClass(
-    @Param('id') id: string
-  ): Promise<any> {
+  async getGradeCompositionsByClass(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getGradeCompositionsByClassID(id)
   }
 
@@ -91,7 +89,7 @@ export class TeachersController {
   @Post('class/:id/student-list')
   async uploadClassStudentList(
     @Body()
-    { classStudentList }: { classStudentList:  ClassStudentList[]}
+    { classStudentList }: { classStudentList: ClassStudentList[] }
   ): Promise<any> {
     return await this.teacherService.uploadClassStudentList(classStudentList)
   }
@@ -99,18 +97,14 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('class/:id/student-list')
-  async GetClassStudentList(
-    @Param('id') id: string
-  ): Promise<any> {
+  async GetClassStudentList(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getClassStudentList(id)
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('class/:id/student-account-list')
-  async GetClassStudentAccountList(
-    @Param('id') id: string
-  ): Promise<any> {
+  async GetClassStudentAccountList(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getClassStudentAccountList(id)
   }
 
@@ -127,9 +121,7 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('class/:id/all-grade')
-  async GetGrade(
-    @Param('id') id: string
-  ): Promise<any> {
+  async GetGrade(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getGradeByClassID(id)
   }
 
@@ -138,7 +130,7 @@ export class TeachersController {
   @Post('class/:id/overall-grade')
   async UpdateOverallGrade(
     @Body()
-    { overallGradeList }: {  overallGradeList: OverallGrade[] }
+    { overallGradeList }: { overallGradeList: OverallGrade[] }
   ): Promise<any> {
     return await this.teacherService.updateOverallGrade(overallGradeList)
   }
@@ -146,9 +138,7 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('class/:id/overall-grade')
-  async GetOverallGrade(
-    @Param('id') id: string
-  ): Promise<any> {
+  async GetOverallGrade(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getOverallGradeByClassID(id)
   }
 }
