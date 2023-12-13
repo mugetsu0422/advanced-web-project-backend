@@ -27,7 +27,7 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('class/student-list')
+  @Post('class/:id/student-list')
   async uploadClassStudentList(
     @Body()
     { classStudentList }: { classStudentList:  ClassStudentList[]}
@@ -55,7 +55,7 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('class/specific-grade')
+  @Post('class/:id/specific-grade')
   async UpdateGradeForSpecificAssignemnt(
     @Body()
     { gradeList }: { gradeList: Grade[] }
@@ -74,7 +74,7 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('class/overall-grade')
+  @Post('class/:id/overall-grade')
   async UpdateOverallGrade(
     @Body()
     { overallGradeList }: {  overallGradeList: OverallGrade[] }
