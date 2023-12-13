@@ -42,7 +42,7 @@ export class TeachersService {
       )
       return 'Upload completed'
     } catch (exception) {
-      return 'Upload completed'
+      return 'Upload fail'
     }
   }
 
@@ -122,7 +122,7 @@ export class TeachersService {
       await Promise.all(promises);
       return 'Upload completed'
     } catch (exception) {
-      return 'Upload completed'
+      return 'Upload fail'
     }
   }
 
@@ -175,7 +175,7 @@ export class TeachersService {
       await Promise.all(promises);
       return 'Upload completed'
     } catch (exception) {
-      return 'Upload completed'
+      return 'Upload fail'
     }
   }
 

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Body, } from '@nestjs/common'
+import { Controller, Get, UseGuards, Post, Body, Param } from '@nestjs/common'
 import { TeachersService } from './teachers.service'
 import { UserRole } from 'src/model/role.enum'
 import { HasRoles } from 'src/decorators/roles.decorator'
@@ -18,17 +18,16 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('grade-compositions-by-class')
+  @Post('class/:id/grade-compositions')
   async getGradeCompositionsByClass(
-    @Body()
-    { classID }: { classID: string }
+    @Param('id') id: string
   ): Promise<any> {
-    return await this.teacherService.getGradeCompositionsByClassID(classID)
+    return await this.teacherService.getGradeCompositionsByClassID(id)
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('upload-class-student-list')
+  @Post('class/student-list')
   async uploadClassStudentList(
     @Body()
     { classStudentList }: { classStudentList:  ClassStudentList[]}
@@ -38,27 +37,25 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('get-class-student-list')
+  @Get('class/:id/student-list')
   async GetClassStudentList(
-    @Body()
-    { classID }: { classID: string }
+    @Param('id') id: string
   ): Promise<any> {
-    return await this.teacherService.getClassStudentList(classID)
+    return await this.teacherService.getClassStudentList(id)
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('get-class-student-account-list')
+  @Get('class/:id/student-account-list')
   async GetClassStudentAccountList(
-    @Body()
-    { classID }: { classID: string }
+    @Param('id') id: string
   ): Promise<any> {
-    return await this.teacherService.getClassStudentAccountList(classID)
+    return await this.teacherService.getClassStudentAccountList(id)
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('update-grade-specific-assignment')
+  @Post('class/specific-grade')
   async UpdateGradeForSpecificAssignemnt(
     @Body()
     { gradeList }: { gradeList: Grade[] }
@@ -68,17 +65,16 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('get-grade')
+  @Get('class/:id/all-grade')
   async GetGrade(
-    @Body()
-    { classID }: { classID: string }
+    @Param('id') id: string
   ): Promise<any> {
-    return await this.teacherService.getGradeByClassID(classID)
+    return await this.teacherService.getGradeByClassID(id)
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('update-overall-grade')
+  @Post('class/overall-grade')
   async UpdateOverallGrade(
     @Body()
     { overallGradeList }: {  overallGradeList: OverallGrade[] }
@@ -88,11 +84,10 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('get-overall-grade')
+  @Get('class/:id/overall-grade')
   async GetOverallGrade(
-    @Body()
-    { classID }: { classID: string }
+    @Param('id') id: string
   ): Promise<any> {
-    return await this.teacherService.getOverallGradeByClassID(classID)
+    return await this.teacherService.getOverallGradeByClassID(id)
   }
 }
