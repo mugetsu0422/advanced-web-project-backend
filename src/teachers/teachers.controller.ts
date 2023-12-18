@@ -17,6 +17,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { Class } from 'src/entity/classes.entity'
 import { TeacherClassAccess } from 'src/auth/guards/teacher-class-access.guard'
+import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { ClassStudentList } from 'src/entity/class-student-list.entity'
 import { Grade } from 'src/entity/grades.entity'
 import { OverallGrade } from 'src/entity/overall-grades.entity'
@@ -79,10 +80,17 @@ export class TeachersController {
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('class/:id/grade-compositions')
-  async getGradeCompositionsByClass(@Param('id') id: string): Promise<any> {
-    return await this.teacherService.getGradeCompositionsByClassID(id)
+  @Get('class/:id/grade-compositions')
+  async getGradeCompositionsByClass(@Param() params: any): Promise<any> {
+    return await this.teacherService.getGradeCompositionsByClassID(params.id)
   }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('class/:id/grade-compositions')
+  async updateGradeCompositionsByClass(@Param('id') id: string, @Body() compositions: GradeComposition[]): Promise<any> {
+    return await this.teacherService.updateGradeCompositions(id, compositions);
+  }  
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)

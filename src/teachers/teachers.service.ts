@@ -218,6 +218,45 @@ export class TeachersService {
     return await this.gradeCompositionRepo.findBy({ classID })
   }
 
+  async updateGradeCompositions(classID: string, compositions: GradeComposition[]): Promise<any> {
+    const existingCompositions = await this.gradeCompositionRepo.find({ where: { classID } });
+    const updatedCompositions = [];
+  
+    for (const existingComposition of existingCompositions) {
+      const foundIndex = compositions.findIndex((comp) => comp.id === existingComposition.id);
+  
+      if (foundIndex === -1) {
+        await this.gradeCompositionRepo.remove(existingComposition);
+      } else {
+        const updatedComposition = compositions[foundIndex];
+        existingComposition.name = updatedComposition.name;
+        existingComposition.scale = updatedComposition.scale;
+        existingComposition.order = updatedComposition.order;
+  
+        const updated = await this.gradeCompositionRepo.save(existingComposition);
+        updatedCompositions.push(updated);
+      }
+    }
+
+    for (const composition of compositions) {
+      const existingComposition = await this.gradeCompositionRepo.findOne({ where: { id: composition.id } });
+      if (!existingComposition) {
+        const newComposition = this.gradeCompositionRepo.create({
+          classID: classID,
+          name: composition.name,
+          scale: composition.scale,
+          order: composition.order,
+        });
+  
+        const saved = await this.gradeCompositionRepo.save(newComposition);
+        updatedCompositions.push(saved);
+      }
+    }
+  
+    return updatedCompositions;
+  }
+  
+
   async uploadClassStudentList(
     classStudentList: ClassStudentList[]
   ): Promise<any> {
