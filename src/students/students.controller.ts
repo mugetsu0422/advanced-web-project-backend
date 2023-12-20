@@ -7,6 +7,8 @@ import {
   Request,
   Query,
   Param,
+  Post,
+  Body,
 } from '@nestjs/common'
 import { StudentsService } from './students.service'
 import { UserRole } from 'src/model/role.enum'
@@ -62,5 +64,15 @@ export class StudentsController {
     @Param() params: any
   ): Promise<GradeComposition[]> {
     return await this.studentService.getGradeCompositionsByClassID(params.id)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('join-class')
+  async joinClassByCode(
+    @Body() { code }: { code: string },
+    @Request() { user }
+  ): Promise<string> {
+    return await this.studentService.joinClassByCode(code, user.UserID)
   }
 }

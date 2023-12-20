@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { Class } from 'src/entity/classes.entity'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
@@ -121,6 +125,32 @@ export class StudentsService {
         .getMany()
     } catch (error) {
       console.error(error)
+    }
+  }
+
+  async joinClassByCode(code: string, userid: string): Promise<string> {
+    try {
+      const { id: classID } = await this.dataSource
+        .createQueryBuilder(Class, 'c')
+        .where('c.code = :code', { code: code })
+        .getOneOrFail()
+      await this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(ClassParticipants)
+        .values([{ classID: classID, userID: userid }])
+        .execute()
+      return classID
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Invitation code is not correct')
+      }
+      if (
+        error instanceof BadRequestException ||
+        error.code == 'ER_DUP_ENTRY'
+      ) {
+        throw new BadRequestException('Already joined class')
+      }
     }
   }
 }
