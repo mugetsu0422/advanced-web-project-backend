@@ -1,4 +1,13 @@
-import { Controller, Get, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Request,
+  Query,
+  Param,
+} from '@nestjs/common'
 import { StudentsService } from './students.service'
 import { UserRole } from 'src/model/role.enum'
 import { HasRoles } from 'src/decorators/roles.decorator'
@@ -9,7 +18,39 @@ import { RolesGuard } from 'src/auth/guards/roles.guard'
 export class StudentsController {
   constructor(private readonly studentService: StudentsService) {}
 
-  // Thêm trước mỗi api
-  // @HasRoles(UserRole.Student)
-  // @UseGuards(JwtAuthGuard, RolesGuard)
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('class/count')
+  getClassCount(@Request() req) {
+    return this.studentService.getClassCount(req.user)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('class')
+  getClasses(@Request() req, @Query() query: string) {
+    return this.studentService.getClassesByOffset(
+      req.user,
+      +query['offset'],
+      +query['limit']
+    )
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('class/:id')
+  getClassDetails(@Request() req, @Param() params: any) {
+    return this.studentService.getClassDetails(params.id)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('class/:id/people')
+  getClassPeople(@Param() params: any) {
+    return this.studentService.getClassPeople(params.id)
+  }
 }

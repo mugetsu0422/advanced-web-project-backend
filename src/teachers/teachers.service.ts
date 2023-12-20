@@ -73,14 +73,17 @@ export class TeachersService {
     try {
       // Count classes that this user created
       let count = await this.classesRepo.count({
-        where: { creator: user.UserID },
+        where: { creator: user.UserID, isClosed: false, isDelete: false },
       })
       // Count classes that this user is a participant in as teacher
-      count += await this.classParticipantsRepo.count({
-        where: {
-          userID: user.UserID,
-        },
-      })
+      count += await this.dataSource
+        .createQueryBuilder(Class, 'c')
+        .innerJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
+        .where('cp.userid = :userid', {
+          userid: user.UserID,
+        })
+        .andWhere('c.isclosed = false and c.isdelete = false')
+        .getCount()
       return count
     } catch (error) {
       console.error(error)
@@ -93,28 +96,24 @@ export class TeachersService {
     limit: number
   ): Promise<Class[]> {
     try {
-      // Get classes that this user created
-      const list1 = await this.classesRepo.find({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-        },
-        where: { creator: user.UserID },
-        order: {
-          createTime: 'DESC',
-        },
-        skip: offset,
-        take: limit,
-      })
-      // Count classes that this user is a participant in as teacher
-      const list2 = await this.dataSource
+      // Get classes that this user is a creator or a participant in as teacher
+      return await this.dataSource
         .getRepository(Class)
         .createQueryBuilder('c')
-        .innerJoin(ClassParticipants, 'cp', 'c.classid = cp.classid')
-        .where('cp.userid = :userid', { userid: user.UserID })
-        .getMany()
-      return list1.concat(list2)
+        .select([
+          'distinct c.id as id',
+          'c.name as name',
+          'c.description as description',
+        ])
+        .leftJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
+        .where('c.creator = :userid or cp.userid = :userid', {
+          userid: user.UserID,
+        })
+        .andWhere('c.isclosed = false and c.isdelete = false')
+        .orderBy('c.createtime', 'DESC')
+        .skip(offset)
+        .take(limit)
+        .getRawMany()
     } catch (error) {
       console.error(error)
     }
@@ -218,44 +217,53 @@ export class TeachersService {
     return await this.gradeCompositionRepo.findBy({ classID })
   }
 
-  async updateGradeCompositions(classID: string, compositions: GradeComposition[]): Promise<any> {
-    const existingCompositions = await this.gradeCompositionRepo.find({ where: { classID } });
-    const updatedCompositions = [];
-  
+  async updateGradeCompositions(
+    classID: string,
+    compositions: GradeComposition[]
+  ): Promise<any> {
+    const existingCompositions = await this.gradeCompositionRepo.find({
+      where: { classID },
+    })
+    const updatedCompositions = []
+
     for (const existingComposition of existingCompositions) {
-      const foundIndex = compositions.findIndex((comp) => comp.id === existingComposition.id);
-  
+      const foundIndex = compositions.findIndex(
+        (comp) => comp.id === existingComposition.id
+      )
+
       if (foundIndex === -1) {
-        await this.gradeCompositionRepo.remove(existingComposition);
+        await this.gradeCompositionRepo.remove(existingComposition)
       } else {
-        const updatedComposition = compositions[foundIndex];
-        existingComposition.name = updatedComposition.name;
-        existingComposition.scale = updatedComposition.scale;
-        existingComposition.order = updatedComposition.order;
-  
-        const updated = await this.gradeCompositionRepo.save(existingComposition);
-        updatedCompositions.push(updated);
+        const updatedComposition = compositions[foundIndex]
+        existingComposition.name = updatedComposition.name
+        existingComposition.scale = updatedComposition.scale
+        existingComposition.order = updatedComposition.order
+
+        const updated =
+          await this.gradeCompositionRepo.save(existingComposition)
+        updatedCompositions.push(updated)
       }
     }
 
     for (const composition of compositions) {
-      const existingComposition = await this.gradeCompositionRepo.findOne({ where: { id: composition.id } });
+      const existingComposition = await this.gradeCompositionRepo.findOne({
+        where: { id: composition.id },
+      })
       if (!existingComposition) {
         const newComposition = this.gradeCompositionRepo.create({
           classID: classID,
           name: composition.name,
           scale: composition.scale,
           order: composition.order,
-        });
-  
-        const saved = await this.gradeCompositionRepo.save(newComposition);
-        updatedCompositions.push(saved);
+        })
+
+        const saved = await this.gradeCompositionRepo.save(newComposition)
+        updatedCompositions.push(saved)
       }
     }
-  
-    return updatedCompositions;
+
+    return updatedCompositions
   }
-  
 
   async uploadClassStudentList(
     classStudentList: ClassStudentList[]
