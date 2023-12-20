@@ -16,6 +16,7 @@ import { HasRoles } from 'src/decorators/roles.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
+import { Class } from 'src/entity/classes.entity'
 
 @Controller('students')
 export class StudentsController {
@@ -74,5 +75,15 @@ export class StudentsController {
     @Request() { user }
   ): Promise<string> {
     return await this.studentService.joinClassByCode(code, user.UserID)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('join-class/:id')
+  async checkInvitationLink(
+    @Param() params: any,
+    @Query('code') code: string
+  ): Promise<Class> {
+    return await this.studentService.checkInvitationLink(params.id, code)
   }
 }

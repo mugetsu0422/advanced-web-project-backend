@@ -8,7 +8,7 @@ import { Class } from 'src/entity/classes.entity'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { User } from 'src/entity/users.entity'
 import { UserRole } from 'src/model/role.enum'
-import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
+import { DataSource, EntityNotFoundError } from 'typeorm'
 
 @Injectable()
 export class StudentsService {
@@ -150,6 +150,21 @@ export class StudentsService {
         error.code == 'ER_DUP_ENTRY'
       ) {
         throw new BadRequestException('Already joined class')
+      }
+    }
+  }
+
+  async checkInvitationLink(classid: string, code: string): Promise<Class> {
+    try {
+      return await this.dataSource
+        .createQueryBuilder(Class, 'c')
+        .select(['c.name'])
+        .where('c.id = :id and c.code = :code', { id: classid, code: code })
+        .andWhere('c.isclosed = false and c.isdelete = false')
+        .getOneOrFail()
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Class not found')
       }
     }
   }
