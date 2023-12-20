@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { Class } from 'src/entity/classes.entity'
+import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { User } from 'src/entity/users.entity'
 import { UserRole } from 'src/model/role.enum'
 import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
@@ -104,6 +105,22 @@ export class StudentsService {
       return { creator: creator, teachers: teachers, students: students }
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  async getGradeCompositionsByClassID(
+    classID: string
+  ): Promise<GradeComposition[]> {
+    try {
+      return await this.dataSource
+        .createQueryBuilder(GradeComposition, 'gp')
+        .select(['gp.name', 'gp.scale'])
+        .where('gp.classid = :id', { id: classID })
+        .andWhere('gp.isdelete = false')
+        .orderBy('gp.order', 'ASC')
+        .getMany()
+    } catch (error) {
+      console.error(error)
     }
   }
 }

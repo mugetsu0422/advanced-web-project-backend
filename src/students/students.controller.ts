@@ -13,6 +13,7 @@ import { UserRole } from 'src/model/role.enum'
 import { HasRoles } from 'src/decorators/roles.decorator'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
+import { GradeComposition } from 'src/entity/grade-compositions.entity'
 
 @Controller('students')
 export class StudentsController {
@@ -52,5 +53,14 @@ export class StudentsController {
   @Get('class/:id/people')
   getClassPeople(@Param() params: any) {
     return this.studentService.getClassPeople(params.id)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-compositions')
+  async getGradeCompositionsByClass(
+    @Param() params: any
+  ): Promise<GradeComposition[]> {
+    return await this.studentService.getGradeCompositionsByClassID(params.id)
   }
 }
