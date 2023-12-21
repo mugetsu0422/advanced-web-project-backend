@@ -47,7 +47,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         isLocked: false,
         isDelete: false,
       }
-      this.userService.create(user)
+      await this.userService.create(user)
     }
     return done(null, profile)
   }
