@@ -139,11 +139,11 @@ CREATE TABLE password_reset_tokens (
 DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications (
 	NotiID varchar(36) NOT NULL,
-	SenderID varchar(36) NOT NULL,
-	ReceiverID varchar(36) NOT NULL,
-	Content text,
-	FOREIGN KEY (SenderID) REFERENCES users(UserID),
-	FOREIGN KEY (ReceiverID) REFERENCES users(UserID),
+	UserID varchar(36) NOT NULL,
+	Content text NOT NULL,
+	Link text NOT NULL,
+	CreateTime datetime default CURRENT_TIMESTAMP(),
+	FOREIGN KEY (UserID) REFERENCES users(UserID),
 	PRIMARY KEY (NotiID)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
