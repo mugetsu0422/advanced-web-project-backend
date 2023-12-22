@@ -16,7 +16,6 @@ import { ConfigService } from '@nestjs/config'
 import { User } from 'src/entity/users.entity'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { generateTokenFromEmail } from '../mailing/TokenUtils'
-import { AuthService } from 'src/auth/auth.service'
 
 @Controller('users')
 export class UsersController {

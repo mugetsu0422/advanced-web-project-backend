@@ -21,6 +21,7 @@ import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { ClassStudentList } from 'src/entity/class-student-list.entity'
 import { Grade } from 'src/entity/grades.entity'
 import { OverallGrade } from 'src/entity/overall-grades.entity'
+import { Notification } from 'src/entity/notifications.entity'
 
 @Controller('teachers')
 export class TeachersController {
@@ -47,6 +48,10 @@ export class TeachersController {
   @HttpCode(HttpStatus.OK)
   @Get('class')
   getClasses(@Request() req, @Query() query: string) {
+    if (!query['offset'] || !query['limit']) {
+      return []
+    }
+
     return this.teacherService.getClassesByOffset(
       req.user,
       +query['offset'],
@@ -88,9 +93,12 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('class/:id/grade-compositions')
-  async updateGradeCompositionsByClass(@Param('id') id: string, @Body() compositions: GradeComposition[]): Promise<any> {
-    return await this.teacherService.updateGradeCompositions(id, compositions);
-  }  
+  async updateGradeCompositionsByClass(
+    @Param('id') id: string,
+    @Body() compositions: GradeComposition[]
+  ): Promise<any> {
+    return await this.teacherService.updateGradeCompositions(id, compositions)
+  }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -148,5 +156,30 @@ export class TeachersController {
   @Get('class/:id/overall-grade')
   async GetOverallGrade(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getOverallGradeByClassID(id)
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification/count')
+  async getNotificationCount(@Request() { user: { UserID } }): Promise<number> {
+    return await this.teacherService.getNotificationCount(UserID)
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification')
+  async getNotification(
+    @Request() { user: { UserID } },
+    @Query() query: string
+  ): Promise<Notification[]> {
+    if (!query['offset'] || !query['limit']) {
+      return []
+    }
+
+    return await this.teacherService.getNotificationByOffset(
+      UserID,
+      +query['offset'],
+      +query['limit']
+    )
   }
 }
