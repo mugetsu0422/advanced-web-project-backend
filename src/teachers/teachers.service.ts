@@ -235,14 +235,14 @@ export class TeachersService {
       if (foundIndex === -1) {
         await this.gradeCompositionRepo.remove(existingComposition)
       } else {
-        const updatedComposition = compositions[foundIndex]
-        existingComposition.name = updatedComposition.name
-        existingComposition.scale = updatedComposition.scale
-        existingComposition.order = updatedComposition.order
-
-        const updated =
-          await this.gradeCompositionRepo.save(existingComposition)
-        updatedCompositions.push(updated)
+        const updatedComposition = compositions[foundIndex];
+        existingComposition.name = updatedComposition.name;
+        existingComposition.scale = updatedComposition.scale;
+        existingComposition.order = updatedComposition.order;
+        existingComposition.isFinalized = updatedComposition.isFinalized;
+  
+        const updated = await this.gradeCompositionRepo.save(existingComposition);
+        updatedCompositions.push(updated);
       }
     }
 
