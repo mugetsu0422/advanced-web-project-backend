@@ -175,10 +175,8 @@ export class TeachersController {
     @Body() updateData: any,
   ): Promise<any> {
     try {
-      console.log(updateData)
       return await this.teacherService.updateGradeReviewDetail(updateData);
     } catch (error) {
-      console.error('Error updating grade review detail:', error);
       throw error;
     }
   }
