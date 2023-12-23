@@ -62,7 +62,7 @@ export class TeachersService {
   async createClass(_class: Class) {
     try {
       _class.id = uuidv4()
-      _class.link = `/student/class/${_class.id}?code=${_class.code}`
+      _class.link = `/student/join-class/${_class.id}?code=${_class.code}`
       return await this.classesRepo.save(_class)
     } catch (error) {
       console.error(error)

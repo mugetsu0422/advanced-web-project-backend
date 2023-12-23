@@ -1,10 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { Class } from 'src/entity/classes.entity'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { User } from 'src/entity/users.entity'
 import { UserRole } from 'src/model/role.enum'
-import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
+import { DataSource, EntityNotFoundError } from 'typeorm'
 
 @Injectable()
 export class StudentsService {
@@ -121,6 +125,47 @@ export class StudentsService {
         .getMany()
     } catch (error) {
       console.error(error)
+    }
+  }
+
+  async joinClassByCode(code: string, userid: string): Promise<string> {
+    try {
+      const { id: classID } = await this.dataSource
+        .createQueryBuilder(Class, 'c')
+        .where('c.code = :code', { code: code })
+        .getOneOrFail()
+      await this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(ClassParticipants)
+        .values([{ classID: classID, userID: userid }])
+        .execute()
+      return classID
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Invitation code is not correct')
+      }
+      if (
+        error instanceof BadRequestException ||
+        error.code == 'ER_DUP_ENTRY'
+      ) {
+        throw new BadRequestException('Already joined class')
+      }
+    }
+  }
+
+  async checkInvitationLink(classid: string, code: string): Promise<Class> {
+    try {
+      return await this.dataSource
+        .createQueryBuilder(Class, 'c')
+        .select(['c.name'])
+        .where('c.id = :id and c.code = :code', { id: classid, code: code })
+        .andWhere('c.isclosed = false and c.isdelete = false')
+        .getOneOrFail()
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Class not found')
+      }
     }
   }
 }
