@@ -10,6 +10,8 @@ import { Student } from 'src/entity/students.entity'
 import { Grade } from 'src/entity/grades.entity'
 import { User } from 'src/entity/users.entity'
 import { OverallGrade } from 'src/entity/overall-grades.entity'
+import { GradeReview } from 'src/entity/grade-reviews.entity'
+import { GradeReviewComment } from 'src/entity/grade-review-comments.entity'
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { OverallGrade } from 'src/entity/overall-grades.entity'
     TypeOrmModule.forFeature([Student]),
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forFeature([OverallGrade]),
+    TypeOrmModule.forFeature([GradeReview]),
+    TypeOrmModule.forFeature([GradeReviewComment]),
   ],
   controllers: [TeachersController],
   exports: [TeachersService],

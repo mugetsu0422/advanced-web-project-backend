@@ -9,6 +9,7 @@ import {
   Request,
   Query,
   Param,
+  Put,
 } from '@nestjs/common'
 import { TeachersService } from './teachers.service'
 import { UserRole } from 'src/model/role.enum'
@@ -148,5 +149,61 @@ export class TeachersController {
   @Get('class/:id/overall-grade')
   async GetOverallGrade(@Param('id') id: string): Promise<any> {
     return await this.teacherService.getOverallGradeByClassID(id)
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-reviews')
+  async getGradeReviewsByClass(@Param('id') id: string): Promise<any> {
+    return await this.teacherService.getGradeReviewsByClassID(id)
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-review-detail')
+  async getGradeReviewDetail(
+    @Query('gradeCompositionID') gradeCompositionID: string,
+    @Query('userID') userID: string,
+  ): Promise<any> {
+    return await this.teacherService.getGradeReviewDetail(gradeCompositionID, userID);
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put('class/:id/grade-review-detail')
+  async updateGradeReviewDetail(
+    @Body() updateData: any,
+  ): Promise<any> {
+    try {
+      console.log(updateData)
+      return await this.teacherService.updateGradeReviewDetail(updateData);
+    } catch (error) {
+      console.error('Error updating grade review detail:', error);
+      throw error;
+    }
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-review-comments')
+  async getGradeReviewComments(
+    @Query('gradeCompositionID') gradeCompositionID: string,
+    @Query('userID') userID: string,
+  ): Promise<any> {
+    return await this.teacherService.getGradeReviewComments(gradeCompositionID, userID);
+  }
+
+  @HasRoles(UserRole.Teacher)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('class/:id/grade-review-comments')
+  async addGradeReviewComments(
+    @Body() { gradeCompositionID, userID, authorID, commentContent }: any,
+  ): Promise<any> {
+    return await this.teacherService.addGradeReviewComment(
+    gradeCompositionID,
+    userID,
+    authorID,
+    commentContent
+  );
   }
 }
