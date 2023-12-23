@@ -10,9 +10,9 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { MailingModule } from './mailing/mailing.module'
 import { MailerModule } from '@nestjs-modules/mailer'
-import { TeachersModule } from './teachers/teachers.module';
-import { StudentsModule } from './students/students.module';
-import { AdminsModule } from './admins/admins.module';
+import { TeachersModule } from './teachers/teachers.module'
+import { StudentsModule } from './students/students.module'
+import { AdminsModule } from './admins/admins.module'
 import { DataSource } from 'typeorm'
 
 @Module({

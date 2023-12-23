@@ -9,6 +9,8 @@ import {
   HttpStatus,
   UseGuards,
   BadRequestException,
+  Request,
+  Query,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { MailingService } from '../mailing/mailing.service'
@@ -16,13 +18,16 @@ import { ConfigService } from '@nestjs/config'
 import { User } from 'src/entity/users.entity'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { generateTokenFromEmail } from '../mailing/TokenUtils'
+import { NotificationsService } from 'src/notifications/notifications.service'
+import { Notification } from 'src/entity/notifications.entity'
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly mailingService: MailingService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly notificationService: NotificationsService
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -32,22 +37,22 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':userID')
-  async getUserById(@Param('userID') userID: string): Promise<any> {
+  @Get('')
+  async getUserById(@Request() { user: { UserID } }): Promise<any> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } =
-      await this.userService.findOneByUserID(userID)
+      await this.userService.findOneByUserID(UserID)
     return result
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':userID')
+  @Put('')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateUserById(
-    @Param('userID') userID: string,
+    @Request() { user: { UserID } },
     @Body() updatedUser: User
   ): Promise<void> {
-    return await this.userService.updateUser(userID, updatedUser)
+    return await this.userService.updateUser(UserID, updatedUser)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -151,5 +156,30 @@ export class UsersController {
       }
     }
     return { success }
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification/count')
+  async getNotificationCount(@Request() { user: { UserID } }): Promise<number> {
+    return await this.notificationService.getNotificationCount(UserID)
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification')
+  async getNotification(
+    @Request() { user: { UserID } },
+    @Query() query: string
+  ): Promise<Notification[]> {
+    if (!query['offset'] || !query['limit']) {
+      return []
+    }
+
+    return await this.notificationService.getNotificationByOffset(
+      UserID,
+      +query['offset'],
+      +query['limit']
+    )
   }
 }

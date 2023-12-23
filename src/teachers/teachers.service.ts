@@ -15,7 +15,7 @@ import { Class } from 'src/entity/classes.entity'
 import { v4 as uuidv4 } from 'uuid'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { UserRole } from 'src/model/role.enum'
-import { Notification } from 'src/entity/notifications.entity'
+import { NotificationsService } from 'src/notifications/notifications.service'
 
 @Injectable()
 export class TeachersService {
@@ -36,7 +36,8 @@ export class TeachersService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     @InjectRepository(OverallGrade)
-    private readonly overallGradeRepo: Repository<OverallGrade>
+    private readonly overallGradeRepo: Repository<OverallGrade>,
+    private readonly notificationService: NotificationsService
   ) {}
 
   async getClassAccess(userID: string, classID: string): Promise<boolean> {
@@ -226,6 +227,7 @@ export class TeachersService {
       where: { classID },
     })
     const updatedCompositions = []
+    const gpNames = []
 
     for (const existingComposition of existingCompositions) {
       const foundIndex = compositions.findIndex(
@@ -235,14 +237,21 @@ export class TeachersService {
       if (foundIndex === -1) {
         await this.gradeCompositionRepo.remove(existingComposition)
       } else {
-        const updatedComposition = compositions[foundIndex];
-        existingComposition.name = updatedComposition.name;
-        existingComposition.scale = updatedComposition.scale;
-        existingComposition.order = updatedComposition.order;
-        existingComposition.isFinalized = updatedComposition.isFinalized;
-  
-        const updated = await this.gradeCompositionRepo.save(existingComposition);
-        updatedCompositions.push(updated);
+        const updatedComposition = compositions[foundIndex]
+
+        // Create noti
+        if (existingComposition.isFinalized != updatedComposition.isFinalized) {
+          gpNames.push(existingComposition.name)
+        }
+
+        existingComposition.name = updatedComposition.name
+        existingComposition.scale = updatedComposition.scale
+        existingComposition.order = updatedComposition.order
+        existingComposition.isFinalized = updatedComposition.isFinalized
+
+        const updated =
+          await this.gradeCompositionRepo.save(existingComposition)
+        updatedCompositions.push(updated)
       }
     }
 
@@ -263,6 +272,8 @@ export class TeachersService {
       }
     }
 
+    // Start the notification process asynchronously
+    this.notificationService.createGPFinalizedNotification(gpNames, classID)
     return updatedCompositions
   }
 
@@ -422,35 +433,5 @@ export class TeachersService {
 
   async getOverallGradeByClassID(classID: string): Promise<OverallGrade[]> {
     return await this.overallGradeRepo.findBy({ classID })
-  }
-
-  async getNotificationCount(userid: string): Promise<number> {
-    try {
-      return await this.dataSource
-        .createQueryBuilder(Notification, 'n')
-        .where('userid = :id', { id: userid })
-        .getCount()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  async getNotificationByOffset(
-    userid: string,
-    offset: number,
-    limit: number
-  ): Promise<Notification[]> {
-    try {
-      return await this.dataSource
-        .createQueryBuilder(Notification, 'n')
-        .select(['n.content', 'n.link', 'n.createTime'])
-        .where('userid = :id', { id: userid })
-        .orderBy('n.createTime', 'DESC')
-        .skip(offset)
-        .take(limit)
-        .getMany()
-    } catch (error) {
-      console.log(error)
-    }
   }
 }

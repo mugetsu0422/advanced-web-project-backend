@@ -10,6 +10,7 @@ import { Student } from 'src/entity/students.entity'
 import { Grade } from 'src/entity/grades.entity'
 import { User } from 'src/entity/users.entity'
 import { OverallGrade } from 'src/entity/overall-grades.entity'
+import { NotificationsService } from 'src/notifications/notifications.service'
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { OverallGrade } from 'src/entity/overall-grades.entity'
   ],
   controllers: [TeachersController],
   exports: [TeachersService],
-  providers: [TeachersService],
+  providers: [TeachersService, NotificationsService],
 })
 export class TeachersModule {}
