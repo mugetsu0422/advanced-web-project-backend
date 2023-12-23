@@ -238,6 +238,7 @@ export class TeachersService {
         existingComposition.name = updatedComposition.name
         existingComposition.scale = updatedComposition.scale
         existingComposition.order = updatedComposition.order
+        existingComposition.isFinalized = updatedComposition.isFinalized;
 
         const updated =
           await this.gradeCompositionRepo.save(existingComposition)
