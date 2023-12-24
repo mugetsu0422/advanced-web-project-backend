@@ -10,12 +10,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
+import { DataSource, EntityNotFoundError, Repository, In } from 'typeorm'
 import { Class } from 'src/entity/classes.entity'
 import { v4 as uuidv4 } from 'uuid'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { UserRole } from 'src/model/role.enum'
 import { NotificationsService } from 'src/notifications/notifications.service'
+import { GradeReview } from 'src/entity/grade-reviews.entity';
+import { GradeReviewComment } from 'src/entity/grade-review-comments.entity';
 
 @Injectable()
 export class TeachersService {
@@ -37,7 +39,11 @@ export class TeachersService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(OverallGrade)
     private readonly overallGradeRepo: Repository<OverallGrade>,
-    private readonly notificationService: NotificationsService
+    private readonly notificationService: NotificationsService,
+    @InjectRepository(GradeReview)
+    private readonly gradeReviewRepo: Repository<GradeReview>,
+    @InjectRepository(GradeReviewComment)
+    private readonly gradeReviewCommentRepo: Repository<GradeReviewComment>
   ) {}
 
   async getClassAccess(userID: string, classID: string): Promise<boolean> {
@@ -433,5 +439,146 @@ export class TeachersService {
 
   async getOverallGradeByClassID(classID: string): Promise<OverallGrade[]> {
     return await this.overallGradeRepo.findBy({ classID })
+  }
+
+  async getGradeReviewsByClassID(classID: string): Promise<any[]> {
+    try {
+      const gradeCompositions = await this.gradeCompositionRepo.find({
+        where: { classID },
+      });
+
+      const gradeCompositionIDs = gradeCompositions.map((composition) => composition.id);
+      const gradeReviews = await this.gradeReviewRepo.find({
+        where: { gradeCompositionID: In(gradeCompositionIDs) },
+      });
+
+      const studentIDs = gradeReviews.map((review) => review.userID);
+      const students = await this.studentRepo.find({
+        where: { id: In(studentIDs) },
+      });
+
+      const studentIDMap = new Map(students.map((student) => [student.id, student.studentID]));
+
+      const result = gradeReviews.map((review) => ({
+        ...review,
+        gradeCompositionName: gradeCompositions.find((comp) => comp.id === review.gradeCompositionID)?.name || '',
+        studentID: studentIDMap.get(review.userID) || '',
+      }));
+
+      result.sort((a, b) => {
+        if (a.isFinal !== b.isFinal) {
+          return a.isFinal ? 1 : -1;
+        }
+        return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching grade reviews by class ID:', error);
+      throw error;
+    }
+  }
+
+  async getGradeReviewDetail(gradeCompositionID: string, userID: string): Promise<any> {
+    try {
+      const gradeComposition = await this.gradeCompositionRepo.findOne({ where: { id: gradeCompositionID } });
+      const student = await this.studentRepo.findOne({ where: { id: userID } });
+      const user = await this.userRepo.findOne({ where: { UserID: userID } });
+      const gradeReview = await this.gradeReviewRepo.findOne({ where: { gradeCompositionID, userID } });
+
+      const result = {
+        gradeCompositionName: gradeComposition?.name || '',
+        studentID: student?.studentID || '',
+        userFullName: user?.fullname || '',
+        currentGrade: gradeReview?.currentGrade || null,
+        expectedGrade: gradeReview?.expectationGrade || null,
+        updatedGrade: gradeReview?.updatedGrade || null,
+        explanation: gradeReview?.explanation || null,
+        isFinal: gradeReview?.isFinal || false,
+      };
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching grade review detail:', error);
+      throw error;
+    }
+  }
+
+  async updateGradeReviewDetail(updateData: any): Promise<any> {
+    try {
+      const { gradeCompositionID, userID, updatedGrade, isFinal } = updateData;
+
+      const gradeReview = await this.gradeReviewRepo.findOne({
+        where: { gradeCompositionID, userID },
+      });
+
+      if (!gradeReview) {
+        return { message: 'Grade review details not found.' };
+      }
+
+      gradeReview.updatedGrade = updatedGrade;
+      gradeReview.isFinal = isFinal;
+
+      await this.gradeReviewRepo.save(gradeReview);
+
+      return { message: 'Grade review details updated successfully.', ...gradeReview };
+    } catch (error) {
+      console.error('Error updating grade review detail:', error);
+      throw error;
+    }
+  }
+
+  async getGradeReviewComments(gradeCompositionID: string, userID: string): Promise<any> {
+    try {
+      const comments = await this.gradeReviewCommentRepo.find({
+        where: { gradeCompositionID: gradeCompositionID, userID: userID },
+        order: { createTime: 'ASC' },
+      });
+
+      const authorIDs = comments.map(comment => comment.authorID);
+      const users = await this.userRepo.find({
+        where: { UserID: In(authorIDs) },
+      });
+  
+      const result = {
+        comments: comments.map(comment => {
+          const author = users.find(user => user.UserID === comment.authorID);
+          return {
+            commentID: comment.commentID,
+            userID: comment.userID,
+            authorName: author?.fullname,
+            createTime: comment.createTime, 
+            commentContent: comment.commentContent,
+          };
+        }),
+      };
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching grade review detail:', error);
+      throw error;
+    }
+  }
+
+  async addGradeReviewComment(
+    gradeCompositionID: string,
+    userID: string,
+    authorID: string,
+    commentContent: string,
+  ): Promise<any> {
+    try {
+      const newComment = await this.gradeReviewCommentRepo.create({
+        gradeCompositionID: gradeCompositionID,
+        userID: userID,
+        authorID: authorID,
+        commentContent: commentContent,
+      });
+      await this.gradeReviewCommentRepo.save(newComment);
+  
+      return newComment;
+    } catch (error) {
+      console.error('Error adding grade review comment:', error);
+      throw error;
+    }
   }
 }
