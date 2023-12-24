@@ -454,6 +454,13 @@ export class TeachersService {
         studentID: studentIDMap.get(review.userID) || '',
       }));
 
+      result.sort((a, b) => {
+        if (a.isFinal !== b.isFinal) {
+          return a.isFinal ? 1 : -1;
+        }
+        return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
+      });
+
       return result;
     } catch (error) {
       console.error('Error fetching grade reviews by class ID:', error);
@@ -514,6 +521,7 @@ export class TeachersService {
     try {
       const comments = await this.gradeReviewCommentRepo.find({
         where: { gradeCompositionID: gradeCompositionID, userID: userID },
+        order: { createTime: 'ASC' },
       });
 
       const authorIDs = comments.map(comment => comment.authorID);
