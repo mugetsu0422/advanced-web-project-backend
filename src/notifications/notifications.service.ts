@@ -87,17 +87,12 @@ export class NotificationsService {
   }
 
   // When a teacher replies to a student grade review
-  async createTeacherReplyNotification(
-    userid: string,
-    gpid: string,
-    classid: string
-  ) {
+  async createTeacherReplyNotification(userid: string, gpid: string) {
     const { className, gpName } = await this.dataSource
-      .createQueryBuilder(Class, 'c')
+      .createQueryBuilder(GradeComposition, 'gp')
       .select(['c.name as className', 'gp.name as gpName'])
-      .innerJoin(GradeComposition, 'gp', 'gp.classid = c.id')
-      .where('c.id = :classid', { classid: classid })
-      .andWhere('gp.id = :gpid', { gpid: gpid })
+      .innerJoin(Class, 'c', 'gp.classid = c.id')
+      .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
 
     const notification = {
@@ -120,17 +115,12 @@ export class NotificationsService {
   }
 
   // When a teacher creates a final decision on a mark review
-  async createFinalMarkReviewNotification(
-    userid: string,
-    gpid: string,
-    classid: string
-  ) {
+  async createFinalMarkReviewNotification(userid: string, gpid: string) {
     const { className, gpName } = await this.dataSource
-      .createQueryBuilder(Class, 'c')
+      .createQueryBuilder(GradeComposition, 'gp')
       .select(['c.name as className', 'gp.name as gpName'])
-      .innerJoin(GradeComposition, 'gp', 'gp.classid = c.id')
-      .where('c.id = :classid', { classid: classid })
-      .andWhere('gp.id = :gpid', { gpid: gpid })
+      .innerJoin(Class, 'c', 'gp.classid = c.id')
+      .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
 
     const notification = {

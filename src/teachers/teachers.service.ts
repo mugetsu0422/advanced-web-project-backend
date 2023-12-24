@@ -16,8 +16,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { UserRole } from 'src/model/role.enum'
 import { NotificationsService } from 'src/notifications/notifications.service'
-import { GradeReview } from 'src/entity/grade-reviews.entity';
-import { GradeReviewComment } from 'src/entity/grade-review-comments.entity';
+import { GradeReview } from 'src/entity/grade-reviews.entity'
+import { GradeReviewComment } from 'src/entity/grade-review-comments.entity'
 
 @Injectable()
 export class TeachersService {
@@ -445,46 +445,62 @@ export class TeachersService {
     try {
       const gradeCompositions = await this.gradeCompositionRepo.find({
         where: { classID },
-      });
+      })
 
-      const gradeCompositionIDs = gradeCompositions.map((composition) => composition.id);
+      const gradeCompositionIDs = gradeCompositions.map(
+        (composition) => composition.id
+      )
       const gradeReviews = await this.gradeReviewRepo.find({
         where: { gradeCompositionID: In(gradeCompositionIDs) },
-      });
+      })
 
-      const studentIDs = gradeReviews.map((review) => review.userID);
+      const studentIDs = gradeReviews.map((review) => review.userID)
       const students = await this.studentRepo.find({
         where: { id: In(studentIDs) },
-      });
+      })
 
-      const studentIDMap = new Map(students.map((student) => [student.id, student.studentID]));
+      const studentIDMap = new Map(
+        students.map((student) => [student.id, student.studentID])
+      )
 
       const result = gradeReviews.map((review) => ({
         ...review,
-        gradeCompositionName: gradeCompositions.find((comp) => comp.id === review.gradeCompositionID)?.name || '',
+        gradeCompositionName:
+          gradeCompositions.find(
+            (comp) => comp.id === review.gradeCompositionID
+          )?.name || '',
         studentID: studentIDMap.get(review.userID) || '',
-      }));
+      }))
 
       result.sort((a, b) => {
         if (a.isFinal !== b.isFinal) {
-          return a.isFinal ? 1 : -1;
+          return a.isFinal ? 1 : -1
         }
-        return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
-      });
+        return (
+          new Date(b.createTime).getTime() - new Date(a.createTime).getTime()
+        )
+      })
 
-      return result;
+      return result
     } catch (error) {
-      console.error('Error fetching grade reviews by class ID:', error);
-      throw error;
+      console.error('Error fetching grade reviews by class ID:', error)
+      throw error
     }
   }
 
-  async getGradeReviewDetail(gradeCompositionID: string, userID: string): Promise<any> {
+  async getGradeReviewDetail(
+    gradeCompositionID: string,
+    userID: string
+  ): Promise<any> {
     try {
-      const gradeComposition = await this.gradeCompositionRepo.findOne({ where: { id: gradeCompositionID } });
-      const student = await this.studentRepo.findOne({ where: { id: userID } });
-      const user = await this.userRepo.findOne({ where: { UserID: userID } });
-      const gradeReview = await this.gradeReviewRepo.findOne({ where: { gradeCompositionID, userID } });
+      const gradeComposition = await this.gradeCompositionRepo.findOne({
+        where: { id: gradeCompositionID },
+      })
+      const student = await this.studentRepo.findOne({ where: { id: userID } })
+      const user = await this.userRepo.findOne({ where: { UserID: userID } })
+      const gradeReview = await this.gradeReviewRepo.findOne({
+        where: { gradeCompositionID, userID },
+      })
 
       const result = {
         gradeCompositionName: gradeComposition?.name || '',
@@ -495,68 +511,80 @@ export class TeachersService {
         updatedGrade: gradeReview?.updatedGrade || null,
         explanation: gradeReview?.explanation || null,
         isFinal: gradeReview?.isFinal || false,
-      };
+      }
 
-      return result;
+      return result
     } catch (error) {
-      console.error('Error fetching grade review detail:', error);
-      throw error;
+      console.error('Error fetching grade review detail:', error)
+      throw error
     }
   }
 
   async updateGradeReviewDetail(updateData: any): Promise<any> {
     try {
-      const { gradeCompositionID, userID, updatedGrade, isFinal } = updateData;
+      const { gradeCompositionID, userID, updatedGrade, isFinal } = updateData
 
       const gradeReview = await this.gradeReviewRepo.findOne({
         where: { gradeCompositionID, userID },
-      });
+      })
 
       if (!gradeReview) {
-        return { message: 'Grade review details not found.' };
+        return { message: 'Grade review details not found.' }
       }
 
-      gradeReview.updatedGrade = updatedGrade;
-      gradeReview.isFinal = isFinal;
+      gradeReview.updatedGrade = updatedGrade
+      gradeReview.isFinal = isFinal
 
-      await this.gradeReviewRepo.save(gradeReview);
+      await this.gradeReviewRepo.save(gradeReview)
 
-      return { message: 'Grade review details updated successfully.', ...gradeReview };
+      // Save notification
+      this.notificationService.createFinalMarkReviewNotification(
+        userID,
+        gradeCompositionID
+      )
+
+      return {
+        message: 'Grade review details updated successfully.',
+        ...gradeReview,
+      }
     } catch (error) {
-      console.error('Error updating grade review detail:', error);
-      throw error;
+      console.error('Error updating grade review detail:', error)
+      throw error
     }
   }
 
-  async getGradeReviewComments(gradeCompositionID: string, userID: string): Promise<any> {
+  async getGradeReviewComments(
+    gradeCompositionID: string,
+    userID: string
+  ): Promise<any> {
     try {
       const comments = await this.gradeReviewCommentRepo.find({
         where: { gradeCompositionID: gradeCompositionID, userID: userID },
         order: { createTime: 'ASC' },
-      });
+      })
 
-      const authorIDs = comments.map(comment => comment.authorID);
+      const authorIDs = comments.map((comment) => comment.authorID)
       const users = await this.userRepo.find({
         where: { UserID: In(authorIDs) },
-      });
-  
+      })
+
       const result = {
-        comments: comments.map(comment => {
-          const author = users.find(user => user.UserID === comment.authorID);
+        comments: comments.map((comment) => {
+          const author = users.find((user) => user.UserID === comment.authorID)
           return {
             commentID: comment.commentID,
             userID: comment.userID,
             authorName: author?.fullname,
-            createTime: comment.createTime, 
+            createTime: comment.createTime,
             commentContent: comment.commentContent,
-          };
+          }
         }),
-      };
+      }
 
-      return result;
+      return result
     } catch (error) {
-      console.error('Error fetching grade review detail:', error);
-      throw error;
+      console.error('Error fetching grade review detail:', error)
+      throw error
     }
   }
 
@@ -564,7 +592,7 @@ export class TeachersService {
     gradeCompositionID: string,
     userID: string,
     authorID: string,
-    commentContent: string,
+    commentContent: string
   ): Promise<any> {
     try {
       const newComment = await this.gradeReviewCommentRepo.create({
@@ -572,13 +600,19 @@ export class TeachersService {
         userID: userID,
         authorID: authorID,
         commentContent: commentContent,
-      });
-      await this.gradeReviewCommentRepo.save(newComment);
-  
-      return newComment;
+      })
+      await this.gradeReviewCommentRepo.save(newComment)
+
+      // Save notification
+      this.notificationService.createTeacherReplyNotification(
+        userID,
+        gradeCompositionID
+      )
+
+      return newComment
     } catch (error) {
-      console.error('Error adding grade review comment:', error);
-      throw error;
+      console.error('Error adding grade review comment:', error)
+      throw error
     }
   }
 }
