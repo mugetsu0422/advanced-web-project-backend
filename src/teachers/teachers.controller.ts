@@ -195,12 +195,13 @@ export class TeachersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('class/:id/grade-review-comments')
   async addGradeReviewComments(
-    @Body() { gradeCompositionID, userID, authorID, commentContent }: any,
+    @Body() { gradeCompositionID, userID, commentContent }: any,
+    @Request() { user: { UserID } },
   ): Promise<any> {
     return await this.teacherService.addGradeReviewComment(
     gradeCompositionID,
     userID,
-    authorID,
+    UserID,
     commentContent
   );
   }
