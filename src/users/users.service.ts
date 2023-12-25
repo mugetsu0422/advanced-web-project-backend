@@ -19,23 +19,23 @@ export class UsersService {
   ) {}
 
   async findOneByUserID(UserID: string): Promise<User> {
-    return await this.usersRepo.findOneBy({ UserID })
+    return await this.usersRepo.findOne({ where: { UserID, isDelete: false } })
   }
 
   async findOneByUserName(username: string): Promise<User> {
-    return await this.usersRepo.findOneBy({ username })
+    return await this.usersRepo.findOne({ where: { username, isDelete: false } })
   }
 
   async findOneByUserEmail(email: string): Promise<User> {
-    return await this.usersRepo.findOneBy({ email })
+    return await this.usersRepo.findOne({ where: { email, isDelete: false } })
   }
 
   async findOneByGoogleID(googleID: string): Promise<User> {
-    return await this.usersRepo.findOneBy({ googleID })
+    return await this.usersRepo.findOne({ where: { googleID, isDelete: false } })
   }
 
   async findOneByFacebookID(facebookID: string): Promise<User> {
-    return await this.usersRepo.findOneBy({ facebookID })
+    return await this.usersRepo.findOne({ where: { facebookID, isDelete: false } })
   }
 
   async create(user: User): Promise<User> {

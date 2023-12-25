@@ -112,13 +112,14 @@ export class TeachersService {
           'distinct c.id as id',
           'c.name as name',
           'c.description as description',
+          'c.createtime as createtime'
         ])
         .leftJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
         .where('c.creator = :userid or cp.userid = :userid', {
           userid: user.UserID,
         })
         .andWhere('c.isclosed = false and c.isdelete = false')
-        .orderBy('c.createtime', 'DESC')
+        .orderBy('createtime', 'DESC')
         .skip(offset)
         .take(limit)
         .getRawMany()
