@@ -524,6 +524,69 @@ export class TeachersService {
     try {
       const { gradeCompositionID, userID, updatedGrade, isFinal } = updateData
 
+      // 1. Find studentID in the students table using userID
+      const student = await this.studentRepo.findOne({ where: { id: userID } })
+      if (!student) {
+        return { message: 'Student not found.' }
+      }
+      const { studentID } = student
+
+      // 2. Find classID in grade_compositions table using gradeCompositionID
+      const gradeComposition = await this.gradeCompositionRepo.findOne({
+        where: { id: gradeCompositionID },
+      })
+      if (!gradeComposition) {
+        return { message: 'Grade composition not found.' }
+      }
+      const { classID } = gradeComposition
+
+      // 3. Update grade in the grades table
+      const grade = await this.gradeRepo.findOne({
+        where: { studentID, gradeCompositionID },
+      })
+      if (!grade) {
+        return { message: 'Grade not found.' }
+      }
+      grade.grade = updatedGrade
+      await this.gradeRepo.save(grade)
+
+      // 4. Update overall grade in the overall_grades table
+      const gradeCompositionsOfClass = await this.gradeCompositionRepo.find({
+        where: { classID },
+      })
+
+      const gradesOfStudent = await this.gradeRepo.find({
+        where: {
+          studentID,
+          gradeCompositionID: In(gradeCompositionsOfClass.map((gc) => gc.id)),
+        },
+      })
+
+      // Calculate overall grade
+      let totalWeightedGrade = 0
+
+      for (const grade of gradesOfStudent) {
+        const matchingComposition = gradeCompositionsOfClass.find(
+          (gc) => gc.id === grade.gradeCompositionID
+        )
+        if (matchingComposition) {
+          const { scale } = matchingComposition
+          totalWeightedGrade += grade.grade * scale
+        }
+      }
+
+      const overallGrade = totalWeightedGrade / 100
+
+      // Update overall grade in the overall_grades table
+      const overallGradeEntry = await this.overallGradeRepo.findOne({
+        where: { classID, studentID },
+      })
+      if (overallGradeEntry) {
+        overallGradeEntry.grade = overallGrade
+        await this.overallGradeRepo.save(overallGradeEntry)
+      }
+
+      // Update grade review details
       const gradeReview = await this.gradeReviewRepo.findOne({
         where: { gradeCompositionID, userID },
       })
@@ -544,7 +607,7 @@ export class TeachersService {
       )
 
       return {
-        message: 'Grade review details updated successfully.',
+        message: 'Grade review details and related data updated successfully.',
         ...gradeReview,
       }
     } catch (error) {
