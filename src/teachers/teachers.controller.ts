@@ -48,6 +48,10 @@ export class TeachersController {
   @HttpCode(HttpStatus.OK)
   @Get('class')
   getClasses(@Request() req, @Query() query: string) {
+    if (!query['offset'] || !query['limit']) {
+      return []
+    }
+
     return this.teacherService.getClassesByOffset(
       req.user,
       +query['offset'],
@@ -89,9 +93,12 @@ export class TeachersController {
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('class/:id/grade-compositions')
-  async updateGradeCompositionsByClass(@Param('id') id: string, @Body() compositions: GradeComposition[]): Promise<any> {
-    return await this.teacherService.updateGradeCompositions(id, compositions);
-  }  
+  async updateGradeCompositionsByClass(
+    @Param('id') id: string,
+    @Body() compositions: GradeComposition[]
+  ): Promise<any> {
+    return await this.teacherService.updateGradeCompositions(id, compositions)
+  }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
