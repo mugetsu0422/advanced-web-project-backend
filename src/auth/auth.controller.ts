@@ -1,4 +1,5 @@
 import {
+  BadRequestException, 
   Controller,
   HttpCode,
   HttpStatus,
@@ -30,6 +31,9 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('signin')
   signIn(@Request() req) {
+    if (req.user.isLocked) {
+      throw new BadRequestException(`Your account has been locked.`)
+    }
     return this.authService.generateJWtToken(req.user)
   }
 
@@ -72,11 +76,17 @@ export class AuthController {
     let user = await this.userService.findOneByGoogleID(socialToken)
 
     if (user !== null) {
+      if (user.isLocked) {
+        throw new BadRequestException(`Your account has been locked.`)
+      }
       return this.authService.generateJWtToken(user)
     } else {
       user = await this.userService.findOneByFacebookID(socialToken)
 
       if (user !== null) {
+        if (user.isLocked) {
+          throw new BadRequestException(`Your account has been locked.`)
+        }
         return this.authService.generateJWtToken(user)
       }
     }

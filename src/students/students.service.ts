@@ -71,7 +71,6 @@ export class StudentsService {
         ])
         .innerJoin(User, 'u', 'c.creator = u.userid')
         .where('c.id = :id', { id: classID })
-        .orderBy('c.createtime', 'DESC')
         .getRawOne()
     } catch (error) {
       console.error(error)

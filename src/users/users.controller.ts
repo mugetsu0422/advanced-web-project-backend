@@ -20,6 +20,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { generateTokenFromEmail } from '../mailing/TokenUtils'
 import { NotificationsService } from 'src/notifications/notifications.service'
 import { Notification } from 'src/entity/notifications.entity'
+import { UserRole } from 'src/model/role.enum'
+import { JwtService } from '@nestjs/jwt'
 
 @Controller('users')
 export class UsersController {
@@ -27,7 +29,8 @@ export class UsersController {
     private readonly userService: UsersService,
     private readonly mailingService: MailingService,
     private readonly configService: ConfigService,
-    private readonly notificationService: NotificationsService
+    private readonly notificationService: NotificationsService,
+    private readonly jwtService: JwtService
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -146,16 +149,33 @@ export class UsersController {
     let success = false
     if (user !== null) {
       success = await this.userService.updateRole(user.UserID, role)
-      return { success }
     } else {
       user = await this.userService.findOneByFacebookID(socialToken)
 
       if (user !== null) {
         success = await this.userService.updateRole(user.UserID, role)
-        return { success }
       }
     }
-    return { success }
+    if (role == 'teacher') {
+      const payload = {
+        sub: user.UserID,
+        username: user.username,
+        role: UserRole.Teacher,
+      }
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      }
+    }
+    if (role == 'student') {
+      const payload = {
+        sub: user.UserID,
+        username: user.username,
+        role: UserRole.Student,
+      }
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      }
+    }
   }
 
   // Dùng cho cho student lẫn teacher
