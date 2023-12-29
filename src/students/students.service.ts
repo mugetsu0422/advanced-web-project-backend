@@ -1,3 +1,4 @@
+import { InjectRepository } from '@nestjs/typeorm'
 import {
   BadRequestException,
   Injectable,
@@ -7,12 +8,15 @@ import { ClassParticipants } from 'src/entity/class-participants.entity'
 import { Class } from 'src/entity/classes.entity'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { User } from 'src/entity/users.entity'
+import { Student } from 'src/entity/students.entity'
 import { UserRole } from 'src/model/role.enum'
-import { DataSource, EntityNotFoundError } from 'typeorm'
+import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource,
+    @InjectRepository(Student)
+    private readonly studentRepo: Repository<Student>,) {}
 
   async getClassCount(user: User): Promise<number> {
     try {
@@ -165,6 +169,35 @@ export class StudentsService {
       if (error instanceof EntityNotFoundError) {
         throw new NotFoundException('Class not found')
       }
+    }
+  }
+
+  async getStudentIDByUserID(UserID: string): Promise<any> {
+    try {   
+      return await this.studentRepo.findOne({ where: { id: UserID } })
+    } catch (error) {
+      console.error('Error fetching student ID:', error)
+      throw error
+    }
+  }
+
+  async mapStudentID(UserID: string, studentId: string): Promise<any> {
+    try {
+      const existingStudent = await this.studentRepo.findOne({ where: { studentID: studentId } });
+      if (existingStudent) {
+        return { success: false, message: 'Student ID is already mapped to an account' };
+      }
+
+      const newStudent = this.studentRepo.create({
+        id: UserID,
+        studentID: studentId,
+      });
+
+      await this.studentRepo.save(newStudent);
+
+      return { success: true, message: 'Student ID mapped successfully' };
+    } catch (error) {
+      return { success: false, message: 'Error mapping student ID' };
     }
   }
 }
