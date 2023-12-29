@@ -17,6 +17,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { Class } from 'src/entity/classes.entity'
+import { Student } from 'src/entity/students.entity'
 
 @Controller('students')
 export class StudentsController {
@@ -85,5 +86,28 @@ export class StudentsController {
     @Query('code') code: string
   ): Promise<Class> {
     return await this.studentService.checkInvitationLink(params.id, code)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('studentid')
+  async getStudentID(
+    @Request() { user: { UserID } }
+  ): Promise<any> {
+    return await this.studentService.getStudentIDByUserID(UserID)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('studentid')
+  async mapStudentID(
+    @Request() { user: { UserID } },
+    @Body('studentid') studentId: string,
+  ): Promise<any> {
+    try {
+      return await this.studentService.mapStudentID(UserID, studentId)
+    } catch (error) {
+      throw new Error(error.message || 'Error mapping student ID');
+    }
   }
 }
