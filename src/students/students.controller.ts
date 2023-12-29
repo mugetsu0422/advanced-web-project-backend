@@ -18,6 +18,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { Class } from 'src/entity/classes.entity'
 import { Student } from 'src/entity/students.entity'
+import { GradeReview } from 'src/entity/grade-reviews.entity'
 
 @Controller('students')
 export class StudentsController {
@@ -109,5 +110,60 @@ export class StudentsController {
     } catch (error) {
       throw new Error(error.message || 'Error mapping student ID');
     }
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/all-grade')
+  async getGradeByClass(
+    @Param('id') id: string,
+    @Request() { user: { UserID } }
+  ): Promise<any> {
+    return await this.studentService.getGradeByClassIDAndUserID(id, UserID)
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('class/:id/grade-review-detail')
+  async addGradeReview(
+    @Body() gradeReviewDetail: any,
+    @Request() { user: { UserID } }
+  ): Promise<any> {
+    return await this.studentService.addGradeReview(UserID, gradeReviewDetail);
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-review-detail')
+  async getGradeReviewDetail(
+    @Query('gradeCompositionID') gradeCompositionID: string,
+    @Query('userID') userID: string,
+  ): Promise<any> {
+    return await this.studentService.getGradeReviewDetail(gradeCompositionID, userID);
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('class/:id/grade-review-comments')
+  async getGradeReviewComments(
+    @Query('gradeCompositionID') gradeCompositionID: string,
+    @Query('userID') userID: string,
+  ): Promise<any> {
+    return await this.studentService.getGradeReviewComments(gradeCompositionID, userID);
+  }
+
+  @HasRoles(UserRole.Student)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('class/:id/grade-review-comments')
+  async addGradeReviewComments(
+    @Body() { gradeCompositionID, userID, commentContent }: any,
+    @Request() { user: { UserID } },
+  ): Promise<any> {
+    return await this.studentService.addGradeReviewComment(
+    gradeCompositionID,
+    userID,
+    UserID,
+    commentContent
+  );
   }
 }
