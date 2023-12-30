@@ -80,15 +80,16 @@ export class UsersController {
     @Body() { email }: { email: string }
   ): Promise<any> {
     const user = await this.userService.findOneByUserEmail(email)
+    if (user.isLocked) return { success: false, message: 'Account with this email is locked' }
     if (user && user.isActivated) {
       const token = generateTokenFromEmail(email)
       const clientUrl = this.configService.get<string>('CLIENT_URL')
       const resetLink = `${clientUrl}forget-password/${token}`
       await this.userService.storePasswordResetToken(user.UserID, token)
       await this.mailingService.sendResetEmail(email, resetLink)
-      return { message: 'Reset instructions sent successfully' }
+      return { success: true, message: 'Reset instructions sent successfully' }
     } else {
-      throw new BadRequestException('User not found or account not activated')
+      return { success: false, message: 'User not found or account not activated' }
     }
   }
 
