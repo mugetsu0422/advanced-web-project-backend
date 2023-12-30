@@ -8,6 +8,7 @@ import { GradeComposition } from 'src/entity/grade-compositions.entity'
 import { Grade } from 'src/entity/grades.entity'
 import { GradeReview } from 'src/entity/grade-reviews.entity'
 import { GradeReviewComment } from 'src/entity/grade-review-comments.entity'
+import { NotificationsService } from 'src/notifications/notifications.service'
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { GradeReviewComment } from 'src/entity/grade-review-comments.entity'
     TypeOrmModule.forFeature([GradeReviewComment]),
   ],
   controllers: [StudentsController],
-  providers: [StudentsService],
+  providers: [StudentsService, NotificationsService],
 })
 export class StudentsModule {}

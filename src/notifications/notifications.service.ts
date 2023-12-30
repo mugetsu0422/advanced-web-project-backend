@@ -70,8 +70,7 @@ export class NotificationsService {
               name,
               stu.classname
             ),
-            // LINK TO BE CHANGED
-            link: '#',
+            link: `/student/class/${classid}/scoreboard`,
             createTime: timestamp,
           }
         })
@@ -88,9 +87,13 @@ export class NotificationsService {
 
   // When a teacher replies to a student grade review
   async createTeacherReplyNotification(userid: string, gpid: string) {
-    const { className, gpName } = await this.dataSource
+    const { classid, className, gpName } = await this.dataSource
       .createQueryBuilder(GradeComposition, 'gp')
-      .select(['c.name as className', 'gp.name as gpName'])
+      .select([
+        'c.classid as classid',
+        'c.name as className',
+        'gp.name as gpName',
+      ])
       .innerJoin(Class, 'c', 'gp.classid = c.id')
       .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
@@ -102,7 +105,7 @@ export class NotificationsService {
         className
       ),
       // LINK TO BE CHANGED
-      link: '#',
+      link: `/student/class/${classid}/scoreboard/grade-review/detail?gradeid=${gpid}&userid=${userid}`,
       createTime: new Date(),
     }
 
@@ -116,9 +119,13 @@ export class NotificationsService {
 
   // When a teacher creates a final decision on a mark review
   async createFinalMarkReviewNotification(userid: string, gpid: string) {
-    const { className, gpName } = await this.dataSource
+    const { classid, className, gpName } = await this.dataSource
       .createQueryBuilder(GradeComposition, 'gp')
-      .select(['c.name as className', 'gp.name as gpName'])
+      .select([
+        'c.classid as classid',
+        'c.name as className',
+        'gp.name as gpName',
+      ])
       .innerJoin(Class, 'c', 'gp.classid = c.id')
       .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
@@ -130,7 +137,7 @@ export class NotificationsService {
         className
       ),
       // LINK TO BE CHANGED
-      link: '#',
+      link: `/student/class/${classid}/scoreboard/grade-review/detail?gradeid=${gpid}&userid=${userid}`,
       createTime: new Date(),
     }
 
@@ -144,67 +151,122 @@ export class NotificationsService {
 
   // When student requests a grade review
   async createGradeReviewRequestNotification(
-    userid: string,
-    gpid: string,
-    classid: string
+    studentUserid: string,
+    gpid: string
   ) {
-    const { className, gpName } = await this.dataSource
-      .createQueryBuilder(Class, 'c')
-      .select(['c.name as className', 'gp.name as gpName'])
-      .innerJoin(GradeComposition, 'gp', 'gp.classid = c.id')
-      .where('c.id = :classid', { classid: classid })
-      .andWhere('gp.id = :gpid', { gpid: gpid })
+    const { classid, className, gpName } = await this.dataSource
+      .createQueryBuilder(GradeComposition, 'gp')
+      .select([
+        'c.classid as classid',
+        'c.name as className',
+        'gp.name as gpName',
+      ])
+      .innerJoin(Class, 'c', 'gp.classid = c.id')
+      .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
 
-    const notification = {
-      userID: userid,
+    const creator = await this.dataSource
+      .createQueryBuilder(Class, 'c')
+      .select(['c.creator'])
+      .where('c.ClassID = :classid', { classid: classid })
+      .getOne()
+
+    const teachers = await this.dataSource
+      .createQueryBuilder(Class, 'c')
+      .select(['cp.userid as userid'])
+      .innerJoin(ClassParticipants, 'cp', 'c.classid = cp.classid')
+      .innerJoin(User, 'u', 'u.userid = cp.userid')
+      .where('c.classid = :classid', { classid: classid })
+      .andWhere('u.role = :role', { role: UserRole.Teacher })
+      .getRawMany()
+
+    const timestamp = new Date()
+    const notifications = []
+    notifications.push({
+      userID: creator.creator,
       content: teacherNotificationTemplates.gradeReviewRequested(
         gpName,
         className
       ),
-      // LINK TO BE CHANGED
-      link: '#',
-      createTime: new Date(),
-    }
+      link: `/teacher/class/${classid}/grade-review/detail?gradeid=${gpid}&userid=${studentUserid}`,
+      createTime: timestamp,
+    })
+    teachers.forEach((teacher) => {
+      notifications.push({
+        userID: teacher.userid,
+        content: teacherNotificationTemplates.gradeReviewRequested(
+          gpName,
+          className
+        ),
+        link: `/teacher/class/${classid}/grade-review/detail?gradeid=${gpid}&userid=${studentUserid}`,
+        createTime: timestamp,
+      })
+    })
 
     await this.dataSource
       .createQueryBuilder()
       .insert()
       .into(Notification)
-      .values(notification)
+      .values(notifications)
       .execute()
   }
 
   // When a student replies to a teacher grade review
-  async createStudentReplyNotification(
-    userid: string,
-    gpid: string,
-    classid: string
-  ) {
-    const { className, gpName } = await this.dataSource
-      .createQueryBuilder(Class, 'c')
-      .select(['c.name as className', 'gp.name as gpName'])
-      .innerJoin(GradeComposition, 'gp', 'gp.classid = c.id')
-      .where('c.id = :classid', { classid: classid })
-      .andWhere('gp.id = :gpid', { gpid: gpid })
+  async createStudentReplyNotification(studentUserid: string, gpid: string) {
+    const { classid, className, gpName } = await this.dataSource
+      .createQueryBuilder(GradeComposition, 'gp')
+      .select([
+        'c.classid as classid',
+        'c.name as className',
+        'gp.name as gpName',
+      ])
+      .innerJoin(Class, 'c', 'gp.classid = c.id')
+      .where('gp.id = :gpid', { gpid: gpid })
       .getRawOne()
 
-    const notification = {
-      userID: userid,
+    const creator = await this.dataSource
+      .createQueryBuilder(Class, 'c')
+      .select(['c.creator'])
+      .where('c.ClassID = :classid', { classid: classid })
+      .getOne()
+
+    const teachers = await this.dataSource
+      .createQueryBuilder(Class, 'c')
+      .select(['cp.userid as userid'])
+      .innerJoin(ClassParticipants, 'cp', 'c.classid = cp.classid')
+      .innerJoin(User, 'u', 'u.userid = cp.userid')
+      .where('c.classid = :classid', { classid: classid })
+      .andWhere('u.role = :role', { role: UserRole.Teacher })
+      .getRawMany()
+
+    const timestamp = new Date()
+    const notifications = []
+    notifications.push({
+      userID: creator.creator,
       content: teacherNotificationTemplates.studentRepliedToGradeReview(
         gpName,
         className
       ),
-      // LINK TO BE CHANGED
-      link: '#',
-      createTime: new Date(),
-    }
+      link: `/teacher/class/${classid}/grade-review/detail?gradeid=${gpid}&userid=${studentUserid}`,
+      createTime: timestamp,
+    })
+    teachers.forEach((teacher) => {
+      notifications.push({
+        userID: teacher.userid,
+        content: teacherNotificationTemplates.studentRepliedToGradeReview(
+          gpName,
+          className
+        ),
+        link: `/teacher/class/${classid}/grade-review/detail?gradeid=${gpid}&userid=${studentUserid}`,
+        createTime: timestamp,
+      })
+    })
 
     await this.dataSource
       .createQueryBuilder()
       .insert()
       .into(Notification)
-      .values(notification)
+      .values(notifications)
       .execute()
   }
 }

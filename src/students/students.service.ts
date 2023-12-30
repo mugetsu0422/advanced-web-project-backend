@@ -14,6 +14,7 @@ import { DataSource, EntityNotFoundError, In, Repository } from 'typeorm'
 import { Grade } from 'src/entity/grades.entity'
 import { GradeReview } from 'src/entity/grade-reviews.entity'
 import { GradeReviewComment } from 'src/entity/grade-review-comments.entity'
+import { NotificationsService } from 'src/notifications/notifications.service'
 
 @Injectable()
 export class StudentsService {
@@ -30,7 +31,8 @@ export class StudentsService {
     @InjectRepository(GradeReview)
     private readonly gradeReviewRepo: Repository<GradeReview>,
     @InjectRepository(GradeReviewComment)
-    private readonly gradeReviewCommentRepo: Repository<GradeReviewComment>
+    private readonly gradeReviewCommentRepo: Repository<GradeReviewComment>,
+    private readonly notificationService: NotificationsService
   ) {}
 
   async getClassCount(user: User): Promise<number> {
@@ -289,10 +291,7 @@ export class StudentsService {
     }
   }
 
-  async addGradeReview(
-    userID: string,
-    gradeReviewDetail: any
-  ): Promise<any> {
+  async addGradeReview(userID: string, gradeReviewDetail: any): Promise<any> {
     try {
       const {
         GradeCompositionID,
@@ -310,6 +309,11 @@ export class StudentsService {
       })
 
       await this.gradeReviewRepo.save(newGradeReview)
+      // add noti
+      this.notificationService.createGradeReviewRequestNotification(
+        userID,
+        GradeCompositionID
+      )
 
       return {
         success: true,
@@ -403,6 +407,10 @@ export class StudentsService {
       await this.gradeReviewCommentRepo.save(newComment)
 
       //add noti
+      this.notificationService.createStudentReplyNotification(
+        userID,
+        gradeCompositionID
+      )
 
       return newComment
     } catch (error) {
