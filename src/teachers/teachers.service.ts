@@ -112,7 +112,7 @@ export class TeachersService {
           'distinct c.id as id',
           'c.name as name',
           'c.description as description',
-          'c.createtime as createtime'
+          'c.createtime as createtime',
         ])
         .leftJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
         .where('c.creator = :userid or cp.userid = :userid', {
