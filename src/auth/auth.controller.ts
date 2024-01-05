@@ -1,5 +1,5 @@
 import {
-  BadRequestException, 
+  BadRequestException,
   Controller,
   HttpCode,
   HttpStatus,
@@ -48,9 +48,17 @@ export class AuthController {
     const expires = new Date()
     expires.setDate(expires.getDate() + 1)
     if (req.user) {
-      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + req.user.id);
+      return res.redirect(
+        this.configService.get<string>('CLIENT_URL') +
+          'signin/?socialToken=' +
+          req.user.id
+      )
     } else {
-      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + '');
+      return res.redirect(
+        this.configService.get<string>('CLIENT_URL') +
+          'signin/?socialToken=' +
+          ''
+      )
     }
   }
 
@@ -65,9 +73,17 @@ export class AuthController {
     const expires = new Date()
     expires.setDate(expires.getDate() + 1)
     if (req.user) {
-      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + req.user.id);
+      return res.redirect(
+        this.configService.get<string>('CLIENT_URL') +
+          'signin/?socialToken=' +
+          req.user.id
+      )
     } else {
-      return res.redirect(this.configService.get<string>('CLIENT_URL') + "signin/?socialToken=" + '');
+      return res.redirect(
+        this.configService.get<string>('CLIENT_URL') +
+          'signin/?socialToken=' +
+          ''
+      )
     }
   }
 

@@ -23,7 +23,9 @@ export class UsersService {
   }
 
   async findOneByUserName(username: string): Promise<User> {
-    return await this.usersRepo.findOne({ where: { username, isDelete: false } })
+    return await this.usersRepo.findOne({
+      where: { username, isDelete: false },
+    })
   }
 
   async findOneByUserEmail(email: string): Promise<User> {
@@ -31,11 +33,15 @@ export class UsersService {
   }
 
   async findOneByGoogleID(googleID: string): Promise<User> {
-    return await this.usersRepo.findOne({ where: { googleID, isDelete: false } })
+    return await this.usersRepo.findOne({
+      where: { googleID, isDelete: false },
+    })
   }
 
   async findOneByFacebookID(facebookID: string): Promise<User> {
-    return await this.usersRepo.findOne({ where: { facebookID, isDelete: false } })
+    return await this.usersRepo.findOne({
+      where: { facebookID, isDelete: false },
+    })
   }
 
   async create(user: User): Promise<User> {

@@ -170,21 +170,22 @@ export class TeachersController {
   @Get('class/:id/grade-review-detail')
   async getGradeReviewDetail(
     @Query('gradeCompositionID') gradeCompositionID: string,
-    @Query('userID') userID: string,
+    @Query('userID') userID: string
   ): Promise<any> {
-    return await this.teacherService.getGradeReviewDetail(gradeCompositionID, userID);
+    return await this.teacherService.getGradeReviewDetail(
+      gradeCompositionID,
+      userID
+    )
   }
 
   @HasRoles(UserRole.Teacher)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Put('class/:id/grade-review-detail')
-  async updateGradeReviewDetail(
-    @Body() updateData: any,
-  ): Promise<any> {
+  async updateGradeReviewDetail(@Body() updateData: any): Promise<any> {
     try {
-      return await this.teacherService.updateGradeReviewDetail(updateData);
+      return await this.teacherService.updateGradeReviewDetail(updateData)
     } catch (error) {
-      throw error;
+      throw error
     }
   }
 
@@ -193,9 +194,12 @@ export class TeachersController {
   @Get('class/:id/grade-review-comments')
   async getGradeReviewComments(
     @Query('gradeCompositionID') gradeCompositionID: string,
-    @Query('userID') userID: string,
+    @Query('userID') userID: string
   ): Promise<any> {
-    return await this.teacherService.getGradeReviewComments(gradeCompositionID, userID);
+    return await this.teacherService.getGradeReviewComments(
+      gradeCompositionID,
+      userID
+    )
   }
 
   @HasRoles(UserRole.Teacher)
@@ -203,13 +207,13 @@ export class TeachersController {
   @Post('class/:id/grade-review-comments')
   async addGradeReviewComments(
     @Body() { gradeCompositionID, userID, commentContent }: any,
-    @Request() { user: { UserID } },
+    @Request() { user: { UserID } }
   ): Promise<any> {
     return await this.teacherService.addGradeReviewComment(
-    gradeCompositionID,
-    userID,
-    UserID,
-    commentContent
-  );
+      gradeCompositionID,
+      userID,
+      UserID,
+      commentContent
+    )
   }
 }
