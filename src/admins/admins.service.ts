@@ -18,19 +18,19 @@ export class AdminsService {
     @InjectRepository(Student)
     private readonly studentRepo: Repository<Student>,
     @InjectRepository(Class)
-    private readonly classRepo: Repository<Class>,
+    private readonly classRepo: Repository<Class>
   ) {}
 
   async getTeacherAccounts(): Promise<User[]> {
     return await this.userRepo.find({
       where: { role: UserRole.Teacher },
-    });
+    })
   }
 
   async getStudentAccounts(): Promise<User[]> {
     return await this.userRepo.find({
       where: { role: UserRole.Student },
-    });
+    })
   }
 
   async updateAccounts(accountList: User[]): Promise<string> {
@@ -47,14 +47,14 @@ export class AdminsService {
             isActivated: account.isActivated,
             isLocked: account.isLocked,
           }
-        );
-      });
-  
-      await Promise.all(promises);
-      return 'Upload completed';
+        )
+      })
+
+      await Promise.all(promises)
+      return 'Upload completed'
     } catch (exception) {
       console.log(exception)
-      return 'Upload fail';
+      return 'Upload fail'
     }
   }
 
@@ -69,11 +69,11 @@ export class AdminsService {
           where: {
             id: student.id,
           },
-        });
-  
+        })
+
         if (student.studentID === '') {
           if (existingStudent) {
-            await this.studentRepo.remove(existingStudent);
+            await this.studentRepo.remove(existingStudent)
           }
         } else {
           if (existingStudent) {
@@ -84,31 +84,31 @@ export class AdminsService {
               {
                 studentID: student.studentID,
               }
-            );
+            )
           } else {
-            await this.studentRepo.save(student);
+            await this.studentRepo.save(student)
           }
         }
-      });
-  
-      await Promise.all(promises);
-      return 'Upload completed';
+      })
+
+      await Promise.all(promises)
+      return 'Upload completed'
     } catch (exception) {
-      return 'Upload fail';
+      return 'Upload fail'
     }
   }
 
   async getClasses(): Promise<Class[]> {
-    const classes = await this.classRepo.find();
-  
+    const classes = await this.classRepo.find()
+
     for (const classObj of classes) {
-      const user = await this.userRepo.findBy({UserID:  classObj.creator});
+      const user = await this.userRepo.findBy({ UserID: classObj.creator })
       if (user) {
-        classObj.creator = user[0].username;
+        classObj.creator = user[0].username
       }
     }
-  
-    return classes;
+
+    return classes
   }
 
   async updateClasses(classList: Class[]): Promise<string> {
@@ -119,16 +119,16 @@ export class AdminsService {
           {
             name: classes.name,
             description: classes.description,
-            isClosed: classes.isClosed
+            isClosed: classes.isClosed,
           }
-        );
-      });
-  
-      await Promise.all(promises);
-      return 'Upload completed';
+        )
+      })
+
+      await Promise.all(promises)
+      return 'Upload completed'
     } catch (exception) {
       console.log(exception)
-      return 'Upload fail';
+      return 'Upload fail'
     }
   }
 }

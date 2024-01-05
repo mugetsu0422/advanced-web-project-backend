@@ -80,7 +80,8 @@ export class UsersController {
     @Body() { email }: { email: string }
   ): Promise<any> {
     const user = await this.userService.findOneByUserEmail(email)
-    if (user.isLocked) return { success: false, message: 'Account with this email is locked' }
+    if (user.isLocked)
+      return { success: false, message: 'Account with this email is locked' }
     if (user && user.isActivated) {
       const token = generateTokenFromEmail(email)
       const clientUrl = this.configService.get<string>('CLIENT_URL')
@@ -89,7 +90,10 @@ export class UsersController {
       await this.mailingService.sendResetEmail(email, resetLink)
       return { success: true, message: 'Reset instructions sent successfully' }
     } else {
-      return { success: false, message: 'User not found or account not activated' }
+      return {
+        success: false,
+        message: 'User not found or account not activated',
+      }
     }
   }
 
