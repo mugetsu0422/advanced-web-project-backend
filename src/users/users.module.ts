@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from 'src/entity/users.entity'
 import { PasswordResetToken } from 'src/entity/password-reset-token.entity'
 import { EmailActivationCode } from 'src/entity/email-activation-codes.entity'
+import { NotificationsService } from 'src/notifications/notifications.service'
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { EmailActivationCode } from 'src/entity/email-activation-codes.entity'
     TypeOrmModule.forFeature([PasswordResetToken]),
     TypeOrmModule.forFeature([EmailActivationCode]),
   ],
-  providers: [UsersService, MailingService],
+  providers: [UsersService, MailingService, NotificationsService],
   exports: [UsersService],
   controllers: [UsersController],
 })

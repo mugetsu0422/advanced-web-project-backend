@@ -52,7 +52,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         isLocked: false,
         isDelete: false,
       }
-      this.userService.create(user)
+      await this.userService.create(user)
     }
     return done(null, profile)
   }

@@ -9,6 +9,8 @@ import {
   HttpStatus,
   UseGuards,
   BadRequestException,
+  Request,
+  Query,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { MailingService } from '../mailing/mailing.service'
@@ -16,14 +18,19 @@ import { ConfigService } from '@nestjs/config'
 import { User } from 'src/entity/users.entity'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { generateTokenFromEmail } from '../mailing/TokenUtils'
-import { AuthService } from 'src/auth/auth.service'
+import { NotificationsService } from 'src/notifications/notifications.service'
+import { Notification } from 'src/entity/notifications.entity'
+import { UserRole } from 'src/model/role.enum'
+import { JwtService } from '@nestjs/jwt'
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
     private readonly mailingService: MailingService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly notificationService: NotificationsService,
+    private readonly jwtService: JwtService
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -33,22 +40,22 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':userID')
-  async getUserById(@Param('userID') userID: string): Promise<any> {
+  @Get('')
+  async getUserById(@Request() { user: { UserID } }): Promise<any> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } =
-      await this.userService.findOneByUserID(userID)
+      await this.userService.findOneByUserID(UserID)
     return result
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':userID')
+  @Put('')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateUserById(
-    @Param('userID') userID: string,
+    @Request() { user: { UserID } },
     @Body() updatedUser: User
   ): Promise<void> {
-    return await this.userService.updateUser(userID, updatedUser)
+    return await this.userService.updateUser(UserID, updatedUser)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,15 +80,16 @@ export class UsersController {
     @Body() { email }: { email: string }
   ): Promise<any> {
     const user = await this.userService.findOneByUserEmail(email)
+    if (user.isLocked) return { success: false, message: 'Account with this email is locked' }
     if (user && user.isActivated) {
       const token = generateTokenFromEmail(email)
       const clientUrl = this.configService.get<string>('CLIENT_URL')
       const resetLink = `${clientUrl}forget-password/${token}`
       await this.userService.storePasswordResetToken(user.UserID, token)
       await this.mailingService.sendResetEmail(email, resetLink)
-      return { message: 'Reset instructions sent successfully' }
+      return { success: true, message: 'Reset instructions sent successfully' }
     } else {
-      throw new BadRequestException('User not found or account not activated')
+      return { success: false, message: 'User not found or account not activated' }
     }
   }
 
@@ -99,6 +107,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('send-activation-code/:userID')
   async sendActivationCode(@Param('userID') userID: string): Promise<any> {
     try {
@@ -114,6 +123,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('verify-activation-code')
   async verifyActivationCode(
     @Body()
@@ -140,15 +150,57 @@ export class UsersController {
     let success = false
     if (user !== null) {
       success = await this.userService.updateRole(user.UserID, role)
-      return { success }
     } else {
       user = await this.userService.findOneByFacebookID(socialToken)
 
       if (user !== null) {
         success = await this.userService.updateRole(user.UserID, role)
-        return { success }
       }
     }
-    return { success }
+    if (role == 'teacher') {
+      const payload = {
+        sub: user.UserID,
+        username: user.username,
+        role: UserRole.Teacher,
+      }
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      }
+    }
+    if (role == 'student') {
+      const payload = {
+        sub: user.UserID,
+        username: user.username,
+        role: UserRole.Student,
+      }
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      }
+    }
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification/count')
+  async getNotificationCount(@Request() { user: { UserID } }): Promise<number> {
+    return await this.notificationService.getNotificationCount(UserID)
+  }
+
+  // Dùng cho cho student lẫn teacher
+  @UseGuards(JwtAuthGuard)
+  @Get('notification')
+  async getNotification(
+    @Request() { user: { UserID } },
+    @Query() query: string
+  ): Promise<Notification[]> {
+    if (!query['offset'] || !query['limit']) {
+      return []
+    }
+
+    return await this.notificationService.getNotificationByOffset(
+      UserID,
+      +query['offset'],
+      +query['limit']
+    )
   }
 }

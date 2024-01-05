@@ -10,6 +10,10 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { MailingModule } from './mailing/mailing.module'
 import { MailerModule } from '@nestjs-modules/mailer'
+import { TeachersModule } from './teachers/teachers.module'
+import { StudentsModule } from './students/students.module'
+import { AdminsModule } from './admins/admins.module'
+import { DataSource } from 'typeorm'
 
 @Module({
   imports: [
@@ -40,8 +44,13 @@ import { MailerModule } from '@nestjs-modules/mailer'
     MailerModule.forRoot({
       transport: 'smtps://user@domain.com:pass@smtp.domain.com',
     }),
+    TeachersModule,
+    StudentsModule,
+    AdminsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+}

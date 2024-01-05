@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm'
 
 @Entity({ name: 'grade_review_comments' })
 export class GradeReviewComment {
@@ -14,6 +19,9 @@ export class GradeReviewComment {
   @Column({ name: 'AuthorID', type: 'varchar', length: 36 })
   authorID: string
 
-  @Column({ name: 'CreateTime', type: 'datetime', nullable: true })
+  @Column({ name: 'CommentContent', type: 'text', nullable: true })
+  commentContent: string
+
+  @CreateDateColumn({ name: 'CreateTime', type: 'datetime', nullable: true })
   createTime: Date
 }
