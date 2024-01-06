@@ -26,23 +26,29 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Clone the repository
+```bash
+git clone https://github.com/mugetsu0422/advanced-web-project-frontend
+```
+
 ## Installation
 
 ```bash
-$ npm install
+cd advanced-web-project-backend
+npm install
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run start
+npm run start
 
 # watch mode
-$ npm run start:dev
+npm run start:dev
 
 # production mode
-$ npm run start:prod
+npm run start:prod
 ```
 
 ## Test
