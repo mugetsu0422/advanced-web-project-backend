@@ -31,10 +31,16 @@
 git clone https://github.com/mugetsu0422/advanced-web-project-backend
 ```
 
+## Create the database
+```bash
+cd advanced-web-project-backend/database
+mysql -u <your_username> -p < script.sql
+```
+
 ## Installation
 
 ```bash
-cd advanced-web-project-backend
+cd ..
 npm install
 ```
 
