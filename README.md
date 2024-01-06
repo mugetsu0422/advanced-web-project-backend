@@ -36,6 +36,7 @@ git clone https://github.com/mugetsu0422/advanced-web-project-backend
 cd advanced-web-project-backend/database
 mysql -u <your_username> -p < script.sql
 ```
+Replace <your_username> by your MySQL username
 
 ## Installation
 
