@@ -28,7 +28,7 @@
 
 ## Clone the repository
 ```bash
-git clone https://github.com/mugetsu0422/advanced-web-project-frontend
+git clone https://github.com/mugetsu0422/advanced-web-project-backend
 ```
 
 ## Installation
