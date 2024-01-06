@@ -87,10 +87,10 @@ export class TeachersService {
       count += await this.dataSource
         .createQueryBuilder(Class, 'c')
         .innerJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
-        .where('cp.userid = :userid', {
+        .where('(cp.userid = :userid)', {
           userid: user.UserID,
         })
-        .andWhere('c.isclosed = false and c.isdelete = false')
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .getCount()
       return count
     } catch (error) {
@@ -115,10 +115,10 @@ export class TeachersService {
           'c.createtime as createtime',
         ])
         .leftJoin(ClassParticipants, 'cp', 'c.id = cp.classid')
-        .where('c.creator = :userid or cp.userid = :userid', {
+        .where('(c.creator = :userid or cp.userid = :userid)', {
           userid: user.UserID,
         })
-        .andWhere('c.isclosed = false and c.isdelete = false')
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .orderBy('createtime', 'DESC')
         .skip(offset)
         .take(limit)

@@ -41,8 +41,8 @@ export class StudentsService {
       return await this.dataSource
         .createQueryBuilder(ClassParticipants, 'cp')
         .innerJoin(Class, 'c', 'c.id = cp.classid')
-        .where('cp.userid = :userid', { userid: user.UserID })
-        .andWhere('c.isclosed = false and c.isdelete = false')
+        .where('(cp.userid = :userid)', { userid: user.UserID })
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .getCount()
     } catch (error) {
       console.error(error)
@@ -68,8 +68,8 @@ export class StudentsService {
         ])
         .innerJoin(ClassParticipants, 'cp', 'c.classid = cp.classid')
         .innerJoin(User, 'u', 'c.creator = u.userid')
-        .where('cp.userid = :userid', { userid: user.UserID })
-        .andWhere('c.isclosed = false and c.isdelete = false')
+        .where('(cp.userid = :userid)', { userid: user.UserID })
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .orderBy('c.createtime', 'DESC')
         .skip(offset)
         .take(limit)
@@ -153,7 +153,11 @@ export class StudentsService {
       const { id: classID } = await this.dataSource
         .createQueryBuilder(Class, 'c')
         .where('c.code = :code', { code: code })
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .getOneOrFail()
+      if (!classID) {
+        throw EntityNotFoundError
+      }
       await this.dataSource
         .createQueryBuilder()
         .insert()
@@ -179,8 +183,8 @@ export class StudentsService {
       return await this.dataSource
         .createQueryBuilder(Class, 'c')
         .select(['c.name'])
-        .where('c.id = :id and c.code = :code', { id: classid, code: code })
-        .andWhere('c.isclosed = false and c.isdelete = false')
+        .where('(c.id = :id and c.code = :code)', { id: classid, code: code })
+        .andWhere('(c.isclosed = false and c.isdelete = false)')
         .getOneOrFail()
     } catch (error) {
       if (error instanceof EntityNotFoundError) {
